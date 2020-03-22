@@ -1,13 +1,13 @@
 import cv2
 import numpy as np
-cap = cv2.VideoCapture('HENRIQUE03.wmv')
+cap = cv2.VideoCapture('HENRIQUE03.wmv') #começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio)
 
 if not cap.isOpened():
     print("Erro")
     exit()
 
-_, p_frame = cap.read() #p_frame sao os valores no array. o true é ignorado pelo. cap.read() so tem valores quando se cria um ponto verde. senao é [0,0,0]
-old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)
+_, p_frame = cap.read() #no video lê a primeira frame
+old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY) #passa a primeira frame para grayScale
 
 #Lukas Kanade params
 lk_params = dict(winSize = (15, 15),
@@ -16,56 +16,53 @@ lk_params = dict(winSize = (15, 15),
 
 point_selected = False
 flag = 1
-close = 1 ##
 
 #Mouse Function
-def addPoint(x, y):
+def addPoint(x, y):#À medida que são selecionados pontos estes são adicionados ao array
     global old_points, origin_points
-    a_point = np.array([[x, y]], dtype=np.float32)
-    old_points = np.append(a_point, old_points, axis=0)
+    a_point = np.array([[x, y]], dtype=np.float32) # formata as coordenadas x,y(float32)
+    old_points = np.append(a_point, old_points, axis=0)#faz append das coordenadas ao array
     origin_points = np.append(a_point, origin_points, axis=0)
 
-def select_point(event, x, y, flags, params):
+def select_point(event, x, y, flags, params): #Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
     global point, point_selected, old_points, flag, origin_points
-    if event == cv2.EVENT_LBUTTONDOWN:
+    if event == cv2.EVENT_LBUTTONDOWN:#quando se clica no lado esquerdo  do rato
         point_selected = True
-        if flag == 1:
-            old_points = np.array([[x,y]], dtype=np.float32)
-            origin_points = np.array([[x,y]], dtype=np.float32)
+        if flag == 1: #cria os arrays que vão ter as coordenadas dos pontos clicados
+            old_points = np.array([[x,y]], dtype=np.float32) #array que vai ter as coordenadas dos pontos conforme o movimento
+            origin_points = np.array([[x,y]], dtype=np.float32)#array que apenas vai conter as coordenadas dos pontos selecionados no inicio(útil para o loop)
             flag+=1
         else: addPoint(x,y)
-        cv2.circle(p_frame, (x, y), 5, (0, 255, 0), -1)
-        print(old_points)
+        cv2.circle(p_frame, (x, y), 5, (0, 255, 0), -1) #sempre que é clicado na imagem, faz um circulo a volta das coord
+        #print(old_points)
 
 cv2.namedWindow("Frame")
-cv2.setMouseCallback("Frame", select_point) #quando se carrega no rato
+cv2.setMouseCallback("Frame", select_point) #quando se carrega no rato ativa a funçao select_point
 
-
-while True:
+while True:# Este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
     cv2.imshow('Frame', p_frame)
 
-    if cv2.waitKey(27) & 0xFF == ord('p'): #vai buscar os ultimos 8 bits da tecla pressionada e no codigo ascii transforma numa letra. ord(p) dá o codigo ascii da letra
+    if cv2.waitKey(27) & 0xFF == ord('p'):
             break
 
 while True:
 
-    check ,frame = cap.read()
+    check ,frame = cap.read() #le frame a frame
 
-    if not check:
-        print("Error buffering")
+    if not check:# entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
 
-        cap1 = cv2.VideoCapture('HENRIQUE03.wmv')
+        cap1 = cv2.VideoCapture('HENRIQUE03.wmv')#abrir nova captura
 
         if not cap1.isOpened():
             print("Erro")
             exit()
 
-        _, p_frame = cap1.read()  # p_frame sao os valores no array. o true é ignorado pelo. cap.read() so tem valores quando se cria um ponto verde. senao é [0,0,0]
-        old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)
+        _, p_frame = cap1.read()  #le o frame anterior
+        old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)#converte a frame para gray
 
-        _, frame1 = cap1.read()
-        gray_frame = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)
-        cap = cap1
+        _, frame1 = cap1.read() #le o frame atual
+        gray_frame = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)#converte a frame para gray
+        cap = cap1 #atualiza as variaveis
         frame = frame1
         old_points = origin_points
 
@@ -73,16 +70,14 @@ while True:
     else:
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-    if point_selected is True:
-        #cv2.circle(frame,point, 5, (0,0,255), 2)
+    if point_selected is True: #Uma vez que um ponto é selecionado faz o Tracking
 
-        new_points, status, error = cv2.calcOpticalFlowPyrLK(old_frame, gray_frame, old_points, None, **lk_params)
-        #print(new_points)
-        old_frame = gray_frame.copy()
+        new_points, status, error = cv2.calcOpticalFlowPyrLK(old_frame, gray_frame, old_points, None, **lk_params) #tracking Luccas Kanade, Optial flow
+        old_frame = gray_frame.copy()#a frame em que eatamos passa a ser a anterior do próximo ciclo
 
-        old_points = new_points
+        old_points = new_points #os new points são as coordenadas dos pontos apos a movimentação
 
-        for x,y in new_points:
+        for x,y in new_points:#por todos s novos pontos desenha um circulo verde à volta
             cv2.circle(frame, (x,y), 5, (0,255,0), 2)
 
 
