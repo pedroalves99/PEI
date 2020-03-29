@@ -1,13 +1,17 @@
 import cv2
 import numpy as np
-cap = cv2.VideoCapture('MENINO01.wmv') #começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio)
+import os, re, os.path
+
+
+
+cap = cv2.VideoCapture('MENINO01.wmv') # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio)
 
 if not cap.isOpened():
     print("Erro")
     exit()
 
-_, p_frame = cap.read() #no video lê a primeira frame
-old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY) #passa a primeira frame para grayScale
+_, p_frame = cap.read() # no video lê a primeira frame
+old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY) # passa a primeira frame para grayScale
 
 #Lukas Kanade params
 lk_params = dict(winSize = (15, 15),
@@ -20,6 +24,28 @@ width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)   # width do frame
 height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT) # height do frame
 fps = 30.0
 fourcc = cv2.VideoWriter_fourcc(*'XVID')    # define saida
+
+
+def load_file(file):
+  number = []
+  onlyfiles = [f for f in os.listdir('.') if os.path.isfile(os.path.join('.', f))]  # load todos os files diretorios
+  filename, file_extension = os.path.splitext(file)                                 # load do nome do ficheiro e da extensao
+  alll_files = len(onlyfiles)                                                      # obter todos os ficheiros do diretorio
+  split = re.compile(r'\d+')                                                     # split do numero do nome do ficheiro
+  number = split.findall(filename) or ['0']                                      # obter o numero do ficheiro
+  only_name = filename.replace(number[0], '')                                       # obter só o nome do ficheiro removendo o numero
+  i = 0
+  found = [s for s in onlyfiles if only_name in s]                               # construir array apenas com nomes de arquivos que correspondem ao only_name (do nome do arquivo)
+  if len(found) == 0:                                                            # se nao encontrar nenhum retorna o próprio
+      return file
+  while i < len(found):                                                          # itera o array dos ficheiros encontrados e retira o numero
+    number.append((split.findall(found[i]) or [0])[0])                        # adiciona para o array number o numero encontrado
+    i += 1
+  number = [int(i) for i in number]                                                 # converte todos os numeros do array para int (cast), alguns sao strings
+  maxx_number = max(number)                                                      # obtem o valor maximo
+  return '{0}{1}{2}'.format(only_name, str(maxx_number + 1), file_extension)
+
+
 
 # Mouse Function
 def addPoint(x, y):# À medida que são selecionados pontos estes são adicionados ao array
@@ -49,16 +75,16 @@ def save_video(outPath, fps, mirror=False):
 
 cv2.namedWindow("Frame")
 cv2.setMouseCallback("Frame", select_point) #quando se carrega no rato ativa a funçao select_point
+filename = 'video.avi'
 
 
-out = cv2.VideoWriter('video.avi', fourcc, fps, (int(width), int(height))) # e cria o ojeto VideoWriter para o primeiro while
 while True:# Este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
     cv2.imshow('Frame', p_frame)
 
     if cv2.waitKey(27) & 0xFF == ord('p'):
             break
 
-out = cv2.VideoWriter('video.avi', fourcc, fps, (int(width), int(height))) # # e cria o objeto VideoWriter para o segundo while
+out = cv2.VideoWriter(load_file(filename), fourcc, fps, (int(width), int(height))) # # e cria o objeto VideoWriter para o segundo while
 while True:
 
     check ,frame = cap.read() #le frame a frame
