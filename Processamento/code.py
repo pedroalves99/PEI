@@ -119,6 +119,8 @@ while True:
 
         for x,y in new_points:#por todos s novos pontos desenha um circulo verde à volta
             cv2.circle(frame, (x,y), 5, (0,255,0), 2)
+    poly=cv2.approxPolyDP(np.array([new_points],dtype=np.int32),1,True)
+    cv2.drawContours(frame,[poly],0,(0,255,0),1)
 
     out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
     cv2.imshow("Frame", frame)
