@@ -3,10 +3,7 @@ import numpy as np
 import os, re, os.path, math, operator
 from functools import reduce
 
-
-
-
-cap = cv2.VideoCapture('MENINO01.wmv') # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio)
+cap = cv2.VideoCapture("MENINO01.wmv") # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio)
 
 if not cap.isOpened():
     print("Erro")
@@ -17,7 +14,7 @@ old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY) # passa a primeira frame p
 
 #Lukas Kanade params
 lk_params = dict(winSize = (15, 15),
-                 maxLevel = 4,
+                 maxLevel = 2,
                  criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
 point_selected = False
@@ -28,7 +25,7 @@ fps = 30.0
 fourcc = cv2.VideoWriter_fourcc(*'XVID')    # define saida
 
 
-def load_file(file):
+def load_file(file):                                                         #      ver exttensao
   number = []
   onlyfiles = [f for f in os.listdir('.') if os.path.isfile(os.path.join('.', f))]  # load todos os files diretorios
   filename, file_extension = os.path.splitext(file)                                 # load do nome do ficheiro e da extensao
@@ -48,7 +45,6 @@ def load_file(file):
   return '{0}{1}{2}'.format(only_name, str(maxx_number + 1), file_extension)
 
 
-
 # Mouse Function
 def addPoint(x, y):# À medida que são selecionados pontos estes são adicionados ao array
     global old_points, origin_points
@@ -65,7 +61,7 @@ def select_point(event, x, y, flags, params): #Chamada quando se clica no video,
             origin_points = np.array([[x,y]], dtype=np.float32)#array que apenas vai conter as coordenadas dos pontos selecionados no inicio(útil para o loop)
             flag+=1
         else: addPoint(x,y)
-        cv2.circle(p_frame, (x, y), 5, (0, 255, 0), -1) #sempre que é clicado na imagem, faz um circulo a volta das coord
+        cv2.circle(p_frame, (x, y), 2, (0, 255, 0), -1) #sempre que é clicado na imagem, faz um circulo a volta das coord
         #print(old_points)
 
 # save_video('video.avi', 20, mirror=True)   depois vejo...
@@ -78,8 +74,8 @@ def save_video(outPath, fps, mirror=False):
 cv2.namedWindow("Frame")
 cv2.setMouseCallback("Frame", select_point) #quando se carrega no rato ativa a funçao select_point
 filename = 'video.avi'
-
-
+t = 0
+vector_points = np.array([[]], dtype=np.float32)
 while True:# Este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
     cv2.imshow('Frame', p_frame)
 
@@ -90,7 +86,7 @@ out = cv2.VideoWriter(load_file(filename), fourcc, fps, (int(width), int(height)
 while True:
 
     check ,frame = cap.read() #le frame a frame
-
+    t += 1
     if not check:# entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
 
         cap1 = cv2.VideoCapture('MENINO01.wmv')#abrir nova captura
@@ -107,8 +103,7 @@ while True:
         cap = cap1 #atualiza as variaveis
         frame = frame1
         old_points = origin_points
-
-
+        vector_points = []
     else:
         gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
@@ -117,23 +112,32 @@ while True:
         new_points, status, error = cv2.calcOpticalFlowPyrLK(old_frame, gray_frame, old_points, None, **lk_params) #tracking Luccas Kanade, Optial flow
         old_frame = gray_frame.copy()#a frame em que eatamos passa a ser a anterior do próximo ciclo
 
-        old_points = new_points #os new points são as coordenadas dos pontos apos a movimentação
+        i = 0
+        for x,y in new_points:
+            cv2.circle(frame, (x, y), 2, (0, 255, ), 1)
+            if vector_points != []:
+                cv2.arrowedLine(frame, (vector_points[i][0],vector_points[i][1]),(x,y) , (0,255,255), 1)
+                #cv2.circle(frame, (vector_points[i][0],vector_points[i][1]), 2, (0,255,0), 1)
+            i+=1
 
-        for x,y in new_points:#por todos s novos pontos desenha um circulo verde à volta
-            cv2.circle(frame, (x,y), 5, (0,255,0), 2)
+        if t == 10: # reset de arrays every 10 frames
+            vector_points = old_points
+            t = 0 # reset da variavel
 
+        old_points = new_points  # os new points são as coordenadas dos pontos apos a movimentação
 
-    center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), new_points), [len(new_points)] * 2))   #centro cartesiano dos pontos
+        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), new_points), [len(new_points)] * 2))   #centro cartesiano dos pontos
 
-    sortedp= sorted(new_points, #   ordenar array em  orientação horária
-           key=lambda coord: (-135 - math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
+        sortedp= sorted(new_points, #   ordenar array em  orientação horária
+               key=lambda coord: (-135 - math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
 
-    poly=cv2.approxPolyDP(np.array([sortedp],dtype=np.int32),1,True)  #aproximação curvilinea do contorno
-    cv2.drawContours(frame,[poly],0,(0,255,0),1)  #desenho do contorno
+        poly=cv2.approxPolyDP(np.array([sortedp],dtype=np.int32),1,True)  #aproximação curvilinea do contorno
+        print("poly"+ str(poly))
+        cv2.drawContours(frame,[poly],0,(0,255,0),1)  #desenho do contorno
 
-    out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
-    cv2.imshow("Frame", frame)
-    key = cv2.waitKey(20)
+        out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
+        cv2.imshow("Frame", frame)
+    key = cv2.waitKey(27)
 
     if key == 27: #ESC
         break
