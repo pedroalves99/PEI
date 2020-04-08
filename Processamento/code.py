@@ -2,6 +2,10 @@ import cv2
 import numpy as np
 import os, re, os.path, math, operator
 from functools import reduce
+import matplotlib.pyplot as plt
+import pandas
+from collections import Counter
+
 
 cap = cv2.VideoCapture("MENINO01.wmv") # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio)
 
@@ -143,6 +147,32 @@ while True:
         break
         close += 1
 
+"""
+
+plt.style.use('ggplot')
+# Fake dataset
+height = [10, 15, 30, 35, 50, 51, 53, 56, 59]
+bars = ('N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'W')
+y_pos = np.arange(len(bars))
+
+# Create bars and choose color
+plt.bar(y_pos, height, color=(0.5, 0.1, 0.5, 0.6))
+
+# Add title and axis names
+plt.title('Movement histogram')
+plt.xlabel('Cardinal Points')
+plt.ylabel('Pixels moved(cm)')
+
+# Limits for the Y axis
+plt.ylim(0, 60)
+
+# Create names
+plt.xticks(y_pos, bars)
+
+# Show graphic
+plt.show()
+
+"""
 
 cap.release()
 cv2.destroyAllWindows()
