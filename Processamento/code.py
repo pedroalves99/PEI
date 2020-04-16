@@ -145,9 +145,11 @@ while True:
 
         contour_gray = cv2.cvtColor(contour, cv2.COLOR_BGR2GRAY)                #passar para gray
         #cv2.imshow("counter_gray", contour_gray)                               #descomentar para ver a gray frame do contorno
-
+        mask=cv2.findContours(contour_gray,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE) #detetar contorno na imagem do gray frame
+      #  cv2.drawContours(contour_gray, mask[i], 0, (255, 0, 0), 1)             #mask[0] é o contorno necessário
+        cv2.drawContours(contour, mask[0],0, (0, 255, 0), 1)                  #desenha contorno de mask[0]
         frame = cv2.add(frame, contour)                                         #fazer o overlay do contour na main frame
-
+        print("pontosSpline:",mask[0])
         cv2.imshow("Frame", frame)
         contour = np.zeros_like(contour)                                        #reset
 
