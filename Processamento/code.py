@@ -2,11 +2,30 @@ import cv2
 import numpy as np
 import os, re, os.path, math, operator
 from functools import reduce
-#import matplotlib.pyplot as plt
-#import pandas
+import matplotlib.pyplot as plt
+import pandas
 from collections import Counter
+from collections import defaultdict
 
 #adicionar aqui as funções
+def hipote(x_inicial, y_inicial, x_final, y_final):               # teorema de pitagoras
+    a = (x_final - x_inicial)**2 + (y_final - y_inicial)**2
+    b = math.sqrt(a)                                            # raiz quadrada
+    return b
+
+def direcao(x_final, x_inicial, y_final, y_inicial):
+    differenceX = x_final - x_inicial
+    differenceY = y_final - y_inicial
+    graus = math.atan2(differenceX, differenceY)/math.pi*180
+    if graus < 0:
+        final_degrees = 360 + graus
+    else:
+        final_degrees = graus
+    cardinal = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
+    compass_lookup = round(final_degrees / 45)
+    return cardinal[compass_lookup]
+
+
 def load_file(file):                                                                #      ver extensao
   number = []
   onlyfiles = [f for f in os.listdir('.') if os.path.isfile(os.path.join('.', f))]  # load todos os files diretorios
@@ -68,7 +87,8 @@ _, p_frame = cap.read()                                                         
 old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
 
 #definir/iniciar variáveis aqui
-
+counts = defaultdict(int)
+cardinal_points = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
 point_selected = False
 flag = 1
 width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)                                        # width do frame
@@ -120,13 +140,32 @@ while True:
         old_frame = gray_frame.copy()                                           #a frame em que eatamos passa a ser a anterior do próximo ciclo
 
         i = 0
+        # tmp = []
         for x,y in new_points:
             cv2.circle(frame, (x, y), 2, (0, 255, ), 1)
 
             if vector_points.size != 0:
                 grad_x, grad_y = x-vector_points[i][0], y-vector_points[i][1]
                 cv2.arrowedLine(frame, (x,y),(x+grad_x, y+grad_y) , (0,255,255), 1)
+                exit = direcao(x + grad_x, x, y + grad_y,y)  # prints the direction of the cardinal points between two points!!
+                print(exit)
+                for cardinal_point in cardinal_points:
+                    # this assumes exit.count() returns an int
+                    counts[cardinal_point] += exit.count(cardinal_point)  # counts the number of times North appears
+                # print(hipote(x, y, x + grad_x, y + grad_y))
+                # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
+                # print(tmp)
+
+                # print(exit.count('N'))
+                # print(hipote(x,y,x+grad_x,y+grad_y))                               #  shows the distance between these two points
+                # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
+                # print(tmp)
             i+=1
+
+        for cardinal_point, count in counts.items():
+            print(f'{cardinal_point} appears a total of {count} times.')
+        arrayV = [i for i in counts.values()]
+        print(arrayV)
 
         if t == 10:                                                             # reset de arrays every 10 frames
             vector_points = old_points
@@ -162,32 +201,29 @@ while True:
         break
         close += 1
 
-"""
-
 plt.style.use('ggplot')
-# Fake dataset
-height = [10, 15, 30, 35, 50, 51, 53, 56, 59]
-bars = ('N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW', 'W')
+
+
+height = arrayV # count times
+bars = ('N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW')
 y_pos = np.arange(len(bars))
 
-# Create bars and choose color
-plt.bar(y_pos, height, color=(0.5, 0.1, 0.5, 0.6))
+# barras e cores
+plt.bar(y_pos, height, color=(0.5, 0.1, 0.5, 0.6)) #edgecolor='red'
 
 # Add title and axis names
 plt.title('Movement histogram')
 plt.xlabel('Cardinal Points')
-plt.ylabel('Pixels moved(cm)')
+plt.ylabel('Count arrows')
 
 # Limits for the Y axis
-plt.ylim(0, 60)
+plt.ylim(ymin=0, ymax=800)  # y maximo
 
 # Create names
 plt.xticks(y_pos, bars)
 
 # Show graphic
 plt.show()
-
-"""
 
 cap.release()
 cv2.destroyAllWindows()
