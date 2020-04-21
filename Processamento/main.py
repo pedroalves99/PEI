@@ -100,6 +100,8 @@ def main():
     seventyFiveBt = Button(window, text="0.75x", width=1).grid(row=12, column=3)
     halfBt = Button(window, text="0.5x", width=1).grid(row=12, column=3, sticky=W)
 
+    window.mainloop()
+
 
 if __name__ == '__main__':
     main()
