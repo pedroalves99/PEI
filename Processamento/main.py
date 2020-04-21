@@ -84,7 +84,8 @@ def main():
 
     window = Tk()
     window.title("EcoTracker")
-    window.attributes("-zoomed", True)
+    window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+    #window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
 
     # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
     # TOP LEFT BUTTONS
