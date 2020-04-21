@@ -1,8 +1,7 @@
 from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
-
-
+import code
 #testing purpouses, replace by actual values later
 framesPerVector = 100
 trackingPoints = 200
@@ -10,6 +9,7 @@ trackingPoints = 200
 
 def getFileDir():
     filename = fd.askopenfilename(filetypes=[("Video files",".avi .wmv .mp4")])
+
     # começar tracking
 
 def saveFileDir():
