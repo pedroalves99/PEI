@@ -10,22 +10,19 @@ import imutils
 from imutils import contours
 import sys
 
-
-
 # adicionar aqui as funções
 class code():
     def __init__(self, video_path):
-        self.videopath = video_path
+        self.video_path = video_path
         # Lukas Kanade params
         self.lk_params = dict(winSize = (25, 25),
                          maxLevel = 4,
                          criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
-
-        video_path = "QUARTA04.wmv"
-
         self.cap = cv2.VideoCapture(video_path)                                               # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio(para já))
-        _, self.p_frame = cap.read()                                                          # no video lê a primeira frame
-        self.old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
+        print(self.video_path)
+        print((self.cap).isOpened())
+        _, self.p_frame = self.cap.read()                                                          # no video lê a primeira frame
+        self.old_frame = cv2.cvtColor(self.p_frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
         # definir/iniciar variáveis aqui
         self.vectors_factor = 1 #fator de visualização dos arrays
         self.q = 0
@@ -43,8 +40,8 @@ class code():
         self.point_selected = False
         self.flag = 1
         self.flag1 = 1
-        self.width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)                                        # width do frame
-        self.height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)                                      # height do frame
+        self.width = (self.cap).get(cv2.CAP_PROP_FRAME_WIDTH)                                        # width do frame
+        self.height = (self.cap).get(cv2.CAP_PROP_FRAME_HEIGHT)                                      # height do frame
         self.fps = 30.0
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')                                         # define saida
         self.filename = 'video.avi'
@@ -56,16 +53,15 @@ class code():
         self.new_points = np.array([[]], dtype=np.float32)
         self.origin_points = np.array([[]], dtype=np.float32)
         self.flagDistance = False
-        self.spline= np.zeros_like(p_frame)
+        self.spline= np.zeros_like(self.p_frame)
         self.conversao = None
-        
-    
+
     # Mouse Function
     def select_point(self, event, x, y, flags, params):                                    #Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
         if event == cv2.EVENT_LBUTTONDOWN:                                           #quando se clica no lado esquerdo  do rato
             self.point_selected = True
             print("flagDistance")
-            print(flagDistance)
+            print(self.flagDistance)
             if not self.flagDistance:
 
                 if self.flag == 1:                                                            #cria os arrays que vão ter as coordenadas dos pontos clicados
@@ -73,34 +69,33 @@ class code():
                     self.origin_points = np.array([[x,y]], dtype=np.float32)                  #array que apenas vai conter as coordenadas dos pontos selecionados no inicio(útil para o loop)
                     self.flag += 1
                 else:
-                    add_point(x, y)
+                    self.add_point(x, y)
 
             else:
                 if self.flag1 == 1:
                     self.vector_distance_2points = np.array([[x,y]], dtype=np.float32) #adiciona os 2 pontos selecionados para calcular a distancia
                     self.flag1 += 1
                 else:
-                    add_point_distance(x, y)
+                    self.add_point_distance(x, y)
 
 
             cv2.circle(self.p_frame, (x, y), 2, (0, 255, 0), -1)                          #sempre que é clicado na imagem, faz um circulo a volta das coord
             # print(old_points)
 
-
-    def main(self):
+    def execute(self):
         cv2.namedWindow("Frame")
-        cv2.setMouseCallback("Frame", select_point)                                      # quando se carrega no rato ativa a funçao select_point
+        cv2.setMouseCallback("Frame", self.select_point)                                      # quando se carrega no rato ativa a funçao select_point
         while True:                                                                      # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
-            #cv2.imshow('Frame', p_frame)
+            cv2.imshow('Frame', self.p_frame)
             if cv2.waitKey(27) & 0xFF == ord('p'):
                 break
             # cof cof
             if cv2.waitKey(27) & 0xFF == ord('d'):
                 self.flagDistance = True
-                self.conversao = distanceBetween2points(p_frame)
-                print(flagDistance)
+                self.conversao = self.distanceBetween2points(self.p_frame)
+                print(self.flagDistance)
         while True:
-            check, frame = cap.read()                                                   # le frame a frame
+            check, self.frame = (self.cap).read()                                                   # le frame a frame
             self.t += 1
             if not check:                                                               # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
                 cap1 = cv2.VideoCapture(video_path)# abrir nova captura
@@ -117,31 +112,31 @@ class code():
                 self.q = 0
                 self.vector_points = np.array([[]], dtype=np.float32)                        # variável que contem os pontos n frames antes, para fazer os vetores
             else:
-                self.gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
             if self.point_selected is True:                                                  # Uma vez que um ponto é selecionado faz o Tracking
                 if self.old_points.size != 0:
-                    self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **lk_params) # tracking Luccas Kanade, Optial flow
-                    self.old_frame = gray_frame.copy()                                           # a frame em que estamos passa a ser a anterior do próximo ciclo
+                    self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
+                    self.old_frame = self.gray_frame.copy()                                           # a frame em que estamos passa a ser a anterior do próximo ciclo
                     if self.t == 9:                                                              # reset de arrays pevery 10 frames
-                        self.vector_points = old_points
+                        self.vector_points = self.old_points
                         self.t = 0                                                               # reset da variavel
-                    self.draw_vectors_and_set_histogram(new_points, vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
-                    self.old_points = new_points                                                 # os new points são as coordenadas dos pontos apos a movimentação
-                    self.spline = draw_spline(spline, new_points)                              #draw spline with the new points
-                    self.frame = cv2.add(frame, spline)                                         # fazer o overlay do contour na main frame
+                    self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
+                    self.old_points = self.new_points                                                 # os new points são as coordenadas dos pontos apos a movimentação
+                    self.spline = self.draw_spline(self.spline, self.new_points)                              #draw spline with the new points
+                    self.frame = cv2.add(self.frame, self.spline)                                         # fazer o overlay do contour na main frame
                     if self.q == 0:                                                             #só faz o resampling 1 vez
-                        self.track_points = resample_points(spline, dif)
-                        self.old_points = track_points
-                        self.vector_points = track_points
+                        self.track_points = self.resample_points(self.spline, self.dif)
+                        self.old_points = self.track_points
+                        self.vector_points = self.track_points
                         self.q = 1
                     cv2.imshow("Frame", self.frame)
                     self.spline = np.zeros_like(self.spline)                                        # reset
                 if self.flagDistance:
                     self.distanciaIntroduzida = hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
                                                   self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
-                if conversao is not None:
-                    self.distanciaCM = distanciaIntroduzida / conversao  # imprime frame a frame a distancia
-                    print(distanciaCM)
+                if self.conversao is not None:
+                    self.distanciaCM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
+                    print(self.distanciaCM)
                 # comentado p nao estar sp a grvar
                 # out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
             self.key = cv2.waitKey(27)
@@ -149,7 +144,7 @@ class code():
                 break
                 self.close += 1
         self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4), sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
-        histogram(arrayArrows, arrayMedidas)
+        histogram(self.arrayArrows, self.arrayMedidas)
         plt.show()
         cap.release()
         cv2.destroyAllWindows()
@@ -204,8 +199,6 @@ class code():
       maxx_number = max(number)                                                      # obtem o valor maximo
       return '{0}{1}{2}'.format(only_name, str(maxx_number + 1), file_extension)
 
-
-
     def add_point(self, x, y):                                                             #à medida que são selecionados pontos estes são adicionados ao array
         global old_points, origin_points
         a_point = np.array([[x, y]], dtype=np.float32)                               #formata as coordenadas x,y(float32)
@@ -220,9 +213,9 @@ class code():
     # save_video('video.avi', 20, mirror=True)   depois vejo...
 
     def save_video(self, outPath, fps, mirror=False):
-        out = cv2.VideoWriter('abc.avi', fourcc, fps, (int(width), int(height)))
-        while(cap.isOpened()):
-            if(check==True):
+        out = cv2.VideoWriter('abc.avi', self.fourcc, fps, (int(self.width), int(self.height)))
+        while((self.cap).isOpened()):
+            if(self.check==True):
                 out.write(frame)
 
     def distanceBetween2points(self, p_frame):
@@ -244,7 +237,7 @@ class code():
             # print(i, x)
             figuras.append(x)
 
-        dist = hipote(figuras[0][3][0][0], figuras[0][3][0][1], figuras[1][2][0][0], figuras[1][2][0][1])
+        dist = self.hipote(figuras[0][3][0][0], figuras[0][3][0][1], figuras[1][2][0][0], figuras[1][2][0][1])
 
         return dist
 
@@ -271,40 +264,40 @@ class code():
             if self.vector_points.size != 0:
                 grad_x, grad_y = x - self.vector_points[i][0], y - self.vector_points[i][1]
                 cv2.arrowedLine(self.frame, (x, y), (x + grad_x, y + grad_y), (0, 255, 255), 1)      #f1 fator de aumento, para melhor visualização, ainda n foi posto
-                tamanho = hipote(x, y, x + grad_x, y + grad_y)
+                tamanho = self.hipote(x, y, x + grad_x, y + grad_y)
                 # print(tamanho)
-                exit = direcao(x + grad_x, x, y + grad_y,
+                exit = self.direcao(x + grad_x, x, y + grad_y,
                                y)  # prints the direction of the cardinal points between two points!!
                 # print(exit)
-                if exit == cardinal_points[
+                if exit == self.cardinal_points[
                     0]:  # tamanho pixeis de cada posição 'N' ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
                     self.tmp.append(tamanho)
                     # print(tmp)
-                if exit == cardinal_points[1]:  # 'NE'
+                if exit == self.cardinal_points[1]:  # 'NE'
                     self.tmp1.append(tamanho)
                     # print(tmp1)
-                if exit == cardinal_points[2]:  # 'E'
+                if exit == self.cardinal_points[2]:  # 'E'
                     self.tmp2.append(tamanho)
                     # print(tmp2)
-                if exit == cardinal_points[3]:  # 'SE'
+                if exit == self.cardinal_points[3]:  # 'SE'
                     self.tmp3.append(tamanho)
                     # print(tmp3)
-                if exit == cardinal_points[4]:  # 'S'
+                if exit == self.cardinal_points[4]:  # 'S'
                     self.tmp4.append(tamanho)
                     # print(tmp4)
-                if exit == cardinal_points[5]:  # 'SW'
+                if exit == self.cardinal_points[5]:  # 'SW'
                     self.tmp5.append(tamanho)
                     # print(tmp5)
-                if exit == cardinal_points[6]:  # 'W'
+                if exit == self.cardinal_points[6]:  # 'W'
                     self.tmp6.append(tamanho)
                     # print(tmp6)
-                if exit == cardinal_points[7]:  # 'NW'
+                if exit == self.cardinal_points[7]:  # 'NW'
                     self.tmp7.append(tamanho)
                     # print(tmp7)
 
-                for cardinal_point in cardinal_points:
+                for cardinal_point in self.cardinal_points:
                     # this assumes exit.count() returns an int
-                    counts[cardinal_point] += exit.count(cardinal_point)  # counts the number of times North appears
+                    self.counts[cardinal_point] += exit.count(cardinal_point)  # counts the number of times North appears
 
                     # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
                     # print(tmp)
@@ -312,9 +305,9 @@ class code():
                 # print(exit.count('N'))
                 # print(hipote(x,y,x+grad_x,y+grad_y))   #  shows the distance between these two points
 
-        for cardinal_point, count in counts.items():
+        for cardinal_point, count in self.counts.items():
             # print(f'{cardinal_point} appears a total of {count} times.')
-            self.arrayArrows = [i for i in counts.values()]
+            self.arrayArrows = [i for i in self.counts.values()]
             # print(arrayArrows)
 
     def order_points(self, A):
@@ -351,8 +344,8 @@ class code():
         mask = cv2.findContours(spline_gray, cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)   # detetar contorno na imagem do gray frame
 
         points = np.unique((mask[0][0]), axis=0)                                         # sem rep
-        points = format_array(points)
-        points = order_points(points)
+        points = self.format_array(points)
+        points = self.order_points(points)
 
         past_elem = np.array([[]], dtype=np.float32)
 
@@ -371,4 +364,5 @@ class code():
 
         return track_points
 
-    main("a")      # para correr direto, comment for correr a partir da interface
+if __name__ == '__main__':
+    code("MENINO01.wmv").execute()
