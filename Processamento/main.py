@@ -80,6 +80,9 @@ def main():
     window = Tk()
     window.title("EcoTracker")
 
+    window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+    #window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+
     # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
     # TOP LEFT BUTTONS
     histogramBt = Button(window, text="Histogram", width=10, height=2).grid(row=1, column=1)
