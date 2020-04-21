@@ -3,16 +3,13 @@ import numpy as np
 import os, re, os.path, math, operator
 from functools import reduce
 import matplotlib.pyplot as plt
-import pandas
 from collections import Counter
 from collections import defaultdict
-import random
+from scipy.spatial import distance
 import imutils
 from imutils import contours
 
-
 # adicionar aqui as funções
-
 
 def histogram(array1, array2):
     bars = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
@@ -29,7 +26,6 @@ def histogram(array1, array2):
     leg = ax.legend();
     return histograma
 
-
 def hipote(x1, y1, x2, y2):               # teorema de pitagoras
     return math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))
 
@@ -45,7 +41,6 @@ def direcao(x_final, x_inicial, y_final, y_inicial):
     cardinal = ["N", "NE", "E", "SE", "S", "SW", "W", "NW", "N"]
     compass_lookup = round(final_degrees / 45)
     return cardinal[compass_lookup]
-
 
 def load_file(file):                                                                #      ver extensao
   number = []
@@ -66,9 +61,8 @@ def load_file(file):                                                            
   maxx_number = max(number)                                                      # obtem o valor maximo
   return '{0}{1}{2}'.format(only_name, str(maxx_number + 1), file_extension)
 
+
 # Mouse Function
-
-
 def select_point(event, x, y, flags, params):                                    #Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
     global point, point_selected, old_points, flag, origin_points, flagDistance, vector_distance_2points, flag1
     if event == cv2.EVENT_LBUTTONDOWN:                                           #quando se clica no lado esquerdo  do rato
@@ -95,8 +89,6 @@ def select_point(event, x, y, flags, params):                                   
         cv2.circle(p_frame, (x, y), 2, (0, 255, 0), -1)                          #sempre que é clicado na imagem, faz um circulo a volta das coord
         # print(old_points)
 
-
-
 def add_point(x, y):                                                             #à medida que são selecionados pontos estes são adicionados ao array
     global old_points, origin_points
     a_point = np.array([[x, y]], dtype=np.float32)                               #formata as coordenadas x,y(float32)
@@ -109,7 +101,6 @@ def add_point_distance(x, y):
     vector_distance_2points = np.append(a_point_distance, vector_distance_2points, axis=0)  # faz append das coordenadas ao array
 
 # save_video('video.avi', 20, mirror=True)   depois vejo...
-
 
 def save_video(outPath, fps, mirror=False):
     out = cv2.VideoWriter('abc.avi', fourcc, fps, (int(width), int(height)))
@@ -140,205 +131,264 @@ def distanceBetween2points(p_frame):
 
     return dist
 
+def draw_spline(frame_spline, points):
+    center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
+                       [len(points)] * 2))                                                       # centro cartesiano dos pontos
+
+    sortedp = sorted(points,                                                                     # ordenar array em  orientação horária
+                     key=lambda coord: (-135 - math.degrees(
+                         math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
+
+    poly = cv2.approxPolyDP(np.array([sortedp], dtype=np.int32), 1, True)                        # aproximação curvilinea do contorno
+
+    contour = cv2.drawContours(frame_spline, [poly], 0, (0, 255, 0), 1)                          # desenho do contorno na "frame "contour
+
+    return contour
+
+def draw_vectors_and_set_histogram(points_to_track, f1):
+    global frame, vector_points, arrayArrows
+    global tmp , tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7
+    i = 0
+    for x, y in points_to_track:
+        cv2.circle(frame, (x, y), 1, (0, 255,), -1)
+        if vector_points.size != 0:
+            grad_x, grad_y = x - vector_points[i][0], y - vector_points[i][1]
+            cv2.arrowedLine(frame, (x, y), (x + grad_x, y + grad_y), (0, 255, 255), 1)      #f1 fator de aumento, para melhor visualização, ainda n foi posto
+            tamanho = hipote(x, y, x + grad_x, y + grad_y)
+            # print(tamanho)
+            exit = direcao(x + grad_x, x, y + grad_y,
+                           y)  # prints the direction of the cardinal points between two points!!
+            # print(exit)
+            if exit == cardinal_points[
+                0]:  # tamanho pixeis de cada posição 'N' ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+                tmp.append(tamanho)
+                # print(tmp)
+            if exit == cardinal_points[1]:  # 'NE'
+                tmp1.append(tamanho)
+                # print(tmp1)
+            if exit == cardinal_points[2]:  # 'E'
+                tmp2.append(tamanho)
+                # print(tmp2)
+            if exit == cardinal_points[3]:  # 'SE'
+                tmp3.append(tamanho)
+                # print(tmp3)
+            if exit == cardinal_points[4]:  # 'S'
+                tmp4.append(tamanho)
+                # print(tmp4)
+            if exit == cardinal_points[5]:  # 'SW'
+                tmp5.append(tamanho)
+                # print(tmp5)
+            if exit == cardinal_points[6]:  # 'W'
+                tmp6.append(tamanho)
+                # print(tmp6)
+            if exit == cardinal_points[7]:  # 'NW'
+                tmp7.append(tamanho)
+                # print(tmp7)
+
+            for cardinal_point in cardinal_points:
+                # this assumes exit.count() returns an int
+                counts[cardinal_point] += exit.count(cardinal_point)  # counts the number of times North appears
+
+                # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
+                # print(tmp)
+        i += 1
+            # print(exit.count('N'))
+            # print(hipote(x,y,x+grad_x,y+grad_y))   #  shows the distance between these two points
+
+    for cardinal_point, count in counts.items():
+        # print(f'{cardinal_point} appears a total of {count} times.')
+        arrayArrows = [i for i in counts.values()]
+        # print(arrayArrows)
+
+def order_points(A):
+    # Sort A based on Y(col-2) coordinates
+    sortedAc2 = A[np.argsort(A[:,1]),:]
+
+    # Get top two and bottom two points
+    top2 = sortedAc2[0:2,:]
+    bottom2 = sortedAc2[2:,:]
+
+    # Sort top2 points to have the first row as the top-left one
+    sortedtop2c1 = top2[np.argsort(top2[:,0]),:]
+    top_left = sortedtop2c1[0,:]
+
+    # Use top left point as pivot & calculate sq-euclidean dist against
+    # bottom2 points & thus get bottom-right, bottom-left sequentially
+    sqdists = distance.cdist(top_left[None], bottom2, 'sqeuclidean')
+    rest2 = bottom2[np.argsort(np.max(sqdists,0))[::-1],:]
+
+    # Concatenate all these points for the final output
+    return np.concatenate((sortedtop2c1,rest2),axis =0)
+
+def format_array(track_array):
+    f_array = np.array(track_array[0], dtype = np.float32)
+
+    for x in track_array[1:]:
+        add = np.array(x, dtype = np.float32)
+        f_array = np.append(add,f_array, axis = 0)
+    return f_array
+
+def resample_points(spline, dif):                                               #devolve um arrray de pontos ao longo da spline com uma distancia de "dif"
+
+    spline_gray = cv2.cvtColor(spline, cv2.COLOR_BGR2GRAY)                      # passar para gray
+    mask = cv2.findContours(spline_gray, cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)   # detetar contorno na imagem do gray frame
+
+    points = np.unique((mask[0][0]), axis=0)                                         # sem rep
+    points = format_array(points)
+    points = order_points(points)
+
+    past_elem = np.array([[]], dtype=np.float32)
+
+    q = 0
+    for z in points:
+        if q == 0:
+            track_points = np.array([z], dtype=np.float32)
+            q = 1
+        else:
+            if past_elem.size == 0:
+                past_elem = z
+            if np.linalg.norm(z - past_elem) > dif:
+                add = np.array([z], dtype=np.float32)
+                track_points = np.append(add, track_points, axis=0)
+                past_elem = z
+
+    return track_points
+
 # Lukas Kanade params
-lk_params = dict(winSize = (15, 15),
-                 maxLevel = 2,
+lk_params = dict(winSize = (25, 25),
+                 maxLevel = 4,
                  criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
 
 video_path = "QUARTA04.wmv"
 cap = cv2.VideoCapture(video_path)                                               # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio(para já))
 
-if not cap.isOpened():
-    print("Erro")
-    exit()
-
-_, p_frame = cap.read()                                                          # no video lê a primeira frame
-old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
+if cap.isOpened():
 
 
-# definir/iniciar variáveis aqui
-tmp = []
-tmp1 = []
-tmp2 = []
-tmp3 = []
-tmp4 = []
-tmp5 = []
-tmp6 = []
-tmp7 = []
-counts = defaultdict(int)
-cardinal_points = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-point_selected = False
-flag = 1
-flag1 = 1
-width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)                                        # width do frame
-height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)                                      # height do frame
-fps = 30.0
-fourcc = cv2.VideoWriter_fourcc(*'XVID')                                         # define saida
-filename = 'video.avi'
-# out = cv2.VideoWriter(load_file(filename), fourcc, fps, (int(width), int(height))) # cria o objeto VideoWriter, comentei p não estar sp a gravar
-t = 0
-vector_points = np.array([[]], dtype=np.float32)                                # variável que contem os pontos n frames antes, para fazer os vetores
-vector_distance_2points = np.array([[]], dtype=np.float32)                      # variavel que contem os 2 pontos para calcular a distancia
-old_points = np.array([[]], dtype=np.float32)
-new_points = np.array([[]], dtype=np.float32)
-origin_points = np.array([[]], dtype=np.float32)
-flagDistance = False
-
-contour = np.zeros_like(p_frame)
-conversao = None
-cv2.namedWindow("Frame")
-cv2.setMouseCallback("Frame", select_point)                                      # quando se carrega no rato ativa a funçao select_point
+    _, p_frame = cap.read()                                                          # no video lê a primeira frame
+    old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
 
 
+    # definir/iniciar variáveis aqui
+    vectors_factor = 1 #fator de visualização dos arrays
+    q = 0
+    dif = 4
+    tmp = []
+    tmp1 = []
+    tmp2 = []
+    tmp3 = []
+    tmp4 = []
+    tmp5 = []
+    tmp6 = []
+    tmp7 = []
+    counts = defaultdict(int)
+    cardinal_points = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+    point_selected = False
+    flag = 1
+    flag1 = 1
+    width = cap.get(cv2.CAP_PROP_FRAME_WIDTH)                                        # width do frame
+    height = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)                                      # height do frame
+    fps = 30.0
+    fourcc = cv2.VideoWriter_fourcc(*'XVID')                                         # define saida
+    filename = 'video.avi'
+    # out = cv2.VideoWriter(load_file(filename), fourcc, fps, (int(width), int(height))) # cria o objeto VideoWriter, comentei p não estar sp a gravar
+    t = 0
+    vector_points = np.array([[]], dtype=np.float32)                                # variável que contem os pontos n frames antes, para fazer os vetores
+    vector_distance_2points = np.array([[]], dtype=np.float32)                      # variavel que contem os 2 pontos para calcular a distancia
+    old_points = np.array([[]], dtype=np.float32)
+    new_points = np.array([[]], dtype=np.float32)
+    origin_points = np.array([[]], dtype=np.float32)
+    flagDistance = False
 
-while True:                                                                      # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
-    cv2.imshow('Frame', p_frame)
+    spline= np.zeros_like(p_frame)
+    conversao = None
+    cv2.namedWindow("Frame")
+    cv2.setMouseCallback("Frame", select_point)                                      # quando se carrega no rato ativa a funçao select_point
 
-    if cv2.waitKey(27) & 0xFF == ord('p'):
-        break
+    while True:                                                                      # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
+        cv2.imshow('Frame', p_frame)
 
-    # cof cof
-    if cv2.waitKey(27) & 0xFF == ord('d'):
-        flagDistance = True
-        conversao = distanceBetween2points(p_frame)
-        print(flagDistance)
+        if cv2.waitKey(27) & 0xFF == ord('p'):
+            break
 
+        # cof cof
+        if cv2.waitKey(27) & 0xFF == ord('d'):
+            flagDistance = True
+            conversao = distanceBetween2points(p_frame)
+            print(flagDistance)
 
-while True:
+    while True:
 
-    check, frame = cap.read()                                                   # le frame a frame
-    t += 1
+        check, frame = cap.read()                                                   # le frame a frame
+        t += 1
 
-    if not check:                                                               # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
+        if not check:                                                               # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
+            cap1 = cv2.VideoCapture(video_path)# abrir nova captura
 
-        cap1 = cv2.VideoCapture(video_path)# abrir nova captura
+            if not cap1.isOpened():
+                print("Erro")
+                exit()
 
-        if not cap1.isOpened():
-            print("Erro")
-            exit()
+            _, p_frame = cap1.read()                                                # le o frame anterior
+            old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
 
-        _, p_frame = cap1.read()                                                # le o frame anterior
-        old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
+            _, frame1 = cap1.read()                                                 # le o frame atual
+            gray_frame = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
+            cap = cap1                                                              # atualiza as variaveis
+            frame = frame1
+            old_points = origin_points
+            q = 0
+            vector_points = np.array([[]], dtype=np.float32)                        # variável que contem os pontos n frames antes, para fazer os vetores
+        else:
+            gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 
-        _, frame1 = cap1.read()                                                 # le o frame atual
-        gray_frame = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
-        cap = cap1                                                              # atualiza as variaveis
-        frame = frame1
-        old_points = origin_points
-        vector_points = np.array([[]], dtype=np.float32)                        # variável que contem os pontos n frames antes, para fazer os vetores
-    else:
-        gray_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        if point_selected is True:                                                  # Uma vez que um ponto é selecionado faz o Tracking
 
-    if point_selected is True:                                                  # Uma vez que um ponto é selecionado faz o Tracking
+            if old_points.size != 0:
+                new_points, status, error = cv2.calcOpticalFlowPyrLK(old_frame, gray_frame, old_points, None, **lk_params) # tracking Luccas Kanade, Optial flow
+                old_frame = gray_frame.copy()                                           # a frame em que estamos passa a ser a anterior do próximo ciclo
 
-        if old_points.size != 0:
-            new_points, status, error = cv2.calcOpticalFlowPyrLK(old_frame, gray_frame, old_points, None, **lk_params) # tracking Luccas Kanade, Optial flow
-            old_frame = gray_frame.copy()                                           # a frame em que estamos passa a ser a anterior do próximo ciclo
+                if t == 9:                                                              # reset de arrays pevery 10 frames
+                    vector_points = old_points
+                    t = 0                                                               # reset da variavel
 
-            i = 0
-            for x,y in new_points:
-                cv2.circle(frame, (x, y), 2, (0, 255, ), 1)
+                draw_vectors_and_set_histogram(new_points, vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
+                old_points = new_points                                                 # os new points são as coordenadas dos pontos apos a movimentação
 
-                if vector_points.size != 0:
-                    grad_x, grad_y = x-vector_points[i][0], y-vector_points[i][1]
-                    cv2.arrowedLine(frame, (x,y),(x+grad_x, y+grad_y) , (0,255,255), 1)
-                    tamanho = hipote(x, y, x + grad_x, y + grad_y)
-                    # print(tamanho)
-                    exit = direcao(x + grad_x, x, y + grad_y,y)  # prints the direction of the cardinal points between two points!!
-                    # print(exit)
-                    if exit == cardinal_points[0]:  # tamanho pixeis de cada posição 'N' ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-                        tmp.append(tamanho)
-                        # print(tmp)
-                    if exit == cardinal_points[1]: # 'NE'
-                        tmp1.append(tamanho)
-                        # print(tmp1)
-                    if exit == cardinal_points[2]: # 'E'
-                        tmp2.append(tamanho)
-                        # print(tmp2)
-                    if exit == cardinal_points[3]: # 'SE'
-                        tmp3.append(tamanho)
-                        # print(tmp3)
-                    if exit == cardinal_points[4]: # 'S'
-                        tmp4.append(tamanho)
-                        # print(tmp4)
-                    if exit == cardinal_points[5]: # 'SW'
-                        tmp5.append(tamanho)
-                        # print(tmp5)
-                    if exit == cardinal_points[6]: # 'W'
-                        tmp6.append(tamanho)
-                        # print(tmp6)
-                    if exit == cardinal_points[7]: # 'NW'
-                        tmp7.append(tamanho)
-                        # print(tmp7)
+                spline = draw_spline(spline, new_points)                              #draw spline with the new points
 
-                    for cardinal_point in cardinal_points:
-                        # this assumes exit.count() returns an int
-                        counts[cardinal_point] += exit.count(cardinal_point)  # counts the number of times North appears
+                frame = cv2.add(frame, spline)                                         # fazer o overlay do contour na main frame
 
-                        # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
-                        # print(tmp)
-
-                    # print(exit.count('N'))
-                    # print(hipote(x,y,x+grad_x,y+grad_y))   #  shows the distance between these two points
-
-                i += 1
-
-            for cardinal_point, count in counts.items():
-                # print(f'{cardinal_point} appears a total of {count} times.')
-                arrayArrows = [i for i in counts.values()]
-                # print(arrayArrows)
-
-            if t == 10:                                                             # reset de arrays every 10 frames
-                vector_points = old_points
-                t = 0                                                               # reset da variavel
-
-            old_points = new_points                                                 # os new points são as coordenadas dos pontos apos a movimentação
+                if q == 0:                                                             #só faz o resampling 1 vez
+                    track_points = resample_points(spline, dif)
+                    old_points = track_points
+                    vector_points = track_points
+                    q = 1
+                cv2.imshow("Frame", frame)
+                spline = np.zeros_like(spline)                                        # reset
 
 
+            if flagDistance:
+                distanciaIntroduzida = hipote(vector_distance_2points[0][0], vector_distance_2points[0][1],
+                                              vector_distance_2points[1][0], vector_distance_2points[1][1])
 
-            center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), new_points), [len(new_points)] * 2))   #centro cartesiano dos pontos
+            if conversao is not None:
+                distanciaCM = distanciaIntroduzida / conversao  # imprime frame a frame a distancia
+                print(distanciaCM)
 
-            sortedp = sorted(new_points,                                             # ordenar array em  orientação horária
-                   key=lambda coord: (-135 - math.degrees(math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
+            # comentado p nao estar sp a grvar
+            # out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
 
-            poly = cv2.approxPolyDP(np.array([sortedp],dtype=np.int32),1,True)        # aproximação curvilinea do contorno
+        key = cv2.waitKey(27)
 
-            contour = cv2.drawContours(contour,[poly],0,(0,255,0),1)                # desenho do contorno na "frame "contour
+        if key == 27: # ESC
+            break
+            close += 1
 
-            contour_gray = cv2.cvtColor(contour, cv2.COLOR_BGR2GRAY)                # passar para gray
-            # cv2.imshow("counter_gray", contour_gray)                       # descomentar para ver a gray frame do contorno
-            mask=cv2.findContours(contour_gray,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE) # detetar contorno na imagem do gray frame
-            # cv2.drawContours(contour_gray, mask[i], 0, (255, 0, 0), 1)             # mask[0] é o contorno necessário
-            cv2.drawContours(contour, mask[0],0, (0, 255, 0), 1)                  # desenha contorno de mask[0]
-            frame = cv2.add(frame, contour)                                         # fazer o overlay do contour na main frame
-            # print("pontosSpline:",mask[0])
-            cv2.imshow("Frame", frame)
-            contour = np.zeros_like(contour)                                        # reset
+    arrayMedidas = [sum(tmp), sum(tmp1), sum(tmp2), sum(tmp3), sum(tmp4), sum(tmp5), sum(tmp6), sum(tmp7)]
 
-        # comentado p nao estar sp a grvar
-        # out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
+    histogram(arrayArrows, arrayMedidas)
+    plt.show()
 
-
-        if flagDistance:
-            distanciaIntroduzida = hipote(vector_distance_2points[0][0], vector_distance_2points[0][1],
-                                          vector_distance_2points[1][0], vector_distance_2points[1][1])
-
-        if conversao is not None:
-            distanciaCM = distanciaIntroduzida / conversao  # imprime frame a frame a distancia
-            print(distanciaCM)
-
-    key = cv2.waitKey(27)
-
-    if key == 27: # ESC
-        break
-        close += 1
-
-arrayMedidas = [sum(tmp), sum(tmp1), sum(tmp2), sum(tmp3), sum(tmp4), sum(tmp5), sum(tmp6), sum(tmp7)]
-
-histogram(arrayArrows, arrayMedidas)
-plt.show()
-
-
-
-cap.release()
-cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
