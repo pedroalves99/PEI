@@ -98,17 +98,17 @@ class code():
             check, self.frame = (self.cap).read()                                                   # le frame a frame
             self.t += 1
             if not check:                                                               # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
-                cap1 = cv2.VideoCapture(video_path)# abrir nova captura
+                cap1 = cv2.VideoCapture(self.video_path)# abrir nova captura
                 if not cap1.isOpened():
                     print("Erro")
                     exit()
                 _, self.p_frame = cap1.read()                                                # le o frame anterior
-                self.old_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
+                self.old_frame = cv2.cvtColor(self.p_frame, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
                 _, self.frame1 = cap1.read()                                                 # le o frame atual
-                self.gray_frame = cv2.cvtColor(frame1, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
+                self.gray_frame = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
                 self.cap = cap1                                                              # atualiza as variaveis
-                self.frame = frame1
-                self.old_points = origin_points
+                self.frame = self.frame1
+                self.old_points = self.origin_points
                 self.q = 0
                 self.vector_points = np.array([[]], dtype=np.float32)                        # variável que contem os pontos n frames antes, para fazer os vetores
             else:
@@ -144,9 +144,9 @@ class code():
                 break
                 self.close += 1
         self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4), sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
-        histogram(self.arrayArrows, self.arrayMedidas)
+        self.histogram(self.arrayArrows, self.arrayMedidas)
         plt.show()
-        cap.release()
+        self.cap.release()
         cv2.destroyAllWindows()
 
     def histogram(self, array1, array2):
@@ -264,7 +264,7 @@ class code():
             if self.vector_points.size != 0:
                 grad_x, grad_y = x - self.vector_points[i][0], y - self.vector_points[i][1]
                 cv2.arrowedLine(self.frame, (x, y), (x + grad_x, y + grad_y), (0, 255, 255), 1)      #f1 fator de aumento, para melhor visualização, ainda n foi posto
-                tamanho = self.hipote(x, y, x + grad_x, y + grad_y)
+                tamanho = self.hipote(x, y, x + 2 * grad_x, y + 2* grad_y)
                 # print(tamanho)
                 exit = self.direcao(x + grad_x, x, y + grad_y,
                                y)  # prints the direction of the cardinal points between two points!!
