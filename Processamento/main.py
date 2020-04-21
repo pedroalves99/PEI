@@ -1,7 +1,7 @@
 from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
-import code
+from code import code
 #testing purpouses, replace by actual values later
 framesPerVector = 100
 trackingPoints = 200
@@ -9,9 +9,8 @@ trackingPoints = 200
 
 def getFileDir():
     filename = fd.askopenfilename(filetypes=[("Video files",".avi .wmv .mp4")])
-
+    code(filename).execute()
     # começar tracking
-
 def saveFileDir():
     global filename
     filename = fd.asksaveasfilename()  
@@ -80,8 +79,8 @@ def main():
     window = Tk()
     window.title("EcoTracker")
 
-    window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
-    #window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+    #window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+    window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
 
     # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
     # TOP LEFT BUTTONS
