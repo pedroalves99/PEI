@@ -3,7 +3,6 @@ from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 
 
-
 #testing purpouses, replace by actual values later
 framesPerVector = 100
 trackingPoints = 200
@@ -18,7 +17,6 @@ def saveFileDir():
     filename = fd.asksaveasfilename()  
     mb.showinfo(title="Done!", message="Saved successfully!") 
     # save com o code.py
-   
 
 def saveFile():
     global filename
@@ -31,7 +29,6 @@ def saveFile():
 
     # save com o code.py
 
-
 def optionsWindow():
     optionsWindow = Toplevel()
     optionsWindow.title("Preferences")
@@ -40,7 +37,6 @@ def optionsWindow():
     optionsWindow.attributes('-topmost', 'true')    # Always on top
 
 
-    
     ntp = Label(optionsWindow, text="Number of tracking points", font="helvetica 11 bold").grid(row=1, column=1, columnspan=3, sticky=W, pady=(20,20), padx=(15,0))
     ntpEntry = Entry(optionsWindow)
     ntpEntry.delete(0, END)
@@ -81,10 +77,9 @@ def saveValues(nfvEntry, ntpEntry, optionsWindow):
 
 def main():
 
-
     window = Tk()
     window.title("EcoTracker")
-    window.attributes("-zoomed", True)
+    window.wm_state('zoomed')
 
     # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
     # TOP LEFT BUTTONS
@@ -105,7 +100,6 @@ def main():
     seventyFiveBt = Button(window, text="0.75x", width=1).grid(row=12, column=3)
     halfBt = Button(window, text="0.5x", width=1).grid(row=12, column=3, sticky=W)
 
-  
-    window.mainloop()
 
-main()
+if __name__ == '__main__':
+    main()
