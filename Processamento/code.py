@@ -24,7 +24,7 @@ class code():
         _, self.p_frame = self.cap.read()                                                          # no video lê a primeira frame
         self.old_frame = cv2.cvtColor(self.p_frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
         # definir/iniciar variáveis aqui
-        self.vectors_factor = 1 #fator de visualização dos arrays
+        self.vectors_factor = 2 #fator de visualização dos arrays
         self.q = 0
         self.dif = 4
         self.tmp = []
@@ -117,7 +117,7 @@ class code():
                 if self.old_points.size != 0:
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
                     self.old_frame = self.gray_frame.copy()                                           # a frame em que estamos passa a ser a anterior do próximo ciclo
-                    if self.t == 9:                                                              # reset de arrays pevery 10 frames
+                    if self.t == 6:                                                              # reset de arrays pevery 10 frames
                         self.vector_points = self.old_points
                         self.t = 0                                                               # reset da variavel
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
@@ -132,7 +132,7 @@ class code():
                     cv2.imshow("Frame", self.frame)
                     self.spline = np.zeros_like(self.spline)                                        # reset
                 if self.flagDistance:
-                    self.distanciaIntroduzida = hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
+                    self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
                                                   self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
                 if self.conversao is not None:
                     self.distanciaCM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
@@ -208,7 +208,7 @@ class code():
     def add_point_distance(self, x, y):
         global vector_distance_2points
         a_point_distance = np.array([[x, y]], dtype=np.float32)
-        self.vector_distance_2points = np.append(a_point_distance, vector_distance_2points, axis=0)  # faz append das coordenadas ao array
+        self.vector_distance_2points = np.append(a_point_distance, self.vector_distance_2points, axis=0)  # faz append das coordenadas ao array
 
     # save_video('video.avi', 20, mirror=True)   depois vejo...
 
@@ -263,8 +263,11 @@ class code():
             cv2.circle(self.frame, (x, y), 1, (0, 255,), -1)
             if self.vector_points.size != 0:
                 grad_x, grad_y = x - self.vector_points[i][0], y - self.vector_points[i][1]
-                cv2.arrowedLine(self.frame, (x, y), (x + grad_x, y + grad_y), (0, 255, 255), 1)      #f1 fator de aumento, para melhor visualização, ainda n foi posto
-                tamanho = self.hipote(x, y, x + 2 * grad_x, y + 2* grad_y)
+                val_x = int(x + (f1 * grad_x))
+                val_y = int(y + (f1 * grad_y))
+                print(val_x)
+                cv2.arrowedLine(self.frame, (x, y), (val_x, val_y), (0, 255, 255), 1)      #f1 fator de aumento, para melhor visualização, ainda n foi posto
+                tamanho = self.hipote(x, y, x + grad_x, y + grad_y)
                 # print(tamanho)
                 exit = self.direcao(x + grad_x, x, y + grad_y,
                                y)  # prints the direction of the cardinal points between two points!!
@@ -365,4 +368,4 @@ class code():
         return track_points
 
 if __name__ == '__main__':
-    code("MENINO01.wmv").execute()
+    code('MENINO01.wmv').execute()
