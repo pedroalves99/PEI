@@ -3,13 +3,15 @@ from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 from code import code
 #testing purpouses, replace by actual values later
-framesPerVector = 100
-trackingPoints = 200
+framesPerVector = 6
+minDist = 4
 
 
 def getFileDir():
     filename = fd.askopenfilename(filetypes=[("Video files",".avi .wmv .mp4")])
-    code(filename).execute()
+    print("minDist: ", minDist)
+    print("FramesPerVector: ", framesPerVector)
+    code(filename, framesPerVector, minDist).execute()
     # começar tracking
 def saveFileDir():
     global filename
@@ -36,13 +38,13 @@ def optionsWindow():
     optionsWindow.attributes('-topmost', 'true')    # Always on top
 
 
-    ntp = Label(optionsWindow, text="Number of tracking points", font="helvetica 11 bold").grid(row=1, column=1, columnspan=3, sticky=W, pady=(20,20), padx=(15,0))
-    ntpEntry = Entry(optionsWindow)
-    ntpEntry.delete(0, END)
-    ntpEntry.insert(0, trackingPoints)
-    ntpEntry.grid(row=1, column=4)
+    minDistL = Label(optionsWindow, text="Distance between resampling points", font="helvetica 10 bold").grid(row=1, column=1, columnspan=3, sticky=W, pady=(20,20), padx=(15,0))
+    minDistEntry = Entry(optionsWindow)
+    minDistEntry.delete(0, END)
+    minDistEntry.insert(0, minDist)
+    minDistEntry.grid(row=1, column=4)
     
-    nfv = Label(optionsWindow, text="Number of frames per vector", font="helvetica 11 bold").grid(row=2, column=1, columnspan=3, sticky=W, padx=(15,0))
+    nfv = Label(optionsWindow, text="Number of frames per vector", font="helvetica 10 bold").grid(row=2, column=1, columnspan=3, sticky=W, padx=(15,0))
     nfvEntry = Entry(optionsWindow, text=framesPerVector)
     nfvEntry.delete(0, END)
     nfvEntry.insert(0, framesPerVector)
@@ -51,26 +53,25 @@ def optionsWindow():
 
     
     # Resets changes to default values
-    resetBt = Button(optionsWindow, text="Reset", width=10, height=1, command= lambda: insertVal(nfvEntry, ntpEntry)).grid(row=3, column=2, padx=(20,5), pady=(15,0))
+    resetBt = Button(optionsWindow, text="Reset", width=10, height=1, command= lambda: insertVal(nfvEntry, minDistEntry)).grid(row=3, column=2, padx=(20,5), pady=(15,0))
 
     # Closes window, discards changes
     discardBt = Button(optionsWindow, text="Discard", width=10, height=1, command= lambda: optionsWindow.destroy()).grid(row=3, column=3, padx=(28,0), pady=(15,0))
     
     # Closes window, saves values
-    confirmBt = Button(optionsWindow, text="Confirm", width=10, height=1, command= lambda: saveValues(nfvEntry, ntpEntry, optionsWindow)).grid(row=3, column=4, padx=(5,0), pady=(15,0))
+    confirmBt = Button(optionsWindow, text="Confirm", width=10, height=1, command= lambda: saveValues(nfvEntry, minDistEntry, optionsWindow)).grid(row=3, column=4, padx=(5,0), pady=(15,0))
 
 
-def insertVal(nfvEntry, ntpEntry):
-    # ARRANJAR DEFAULT VALUES
+def insertVal(nfvEntry, minDistEntry):
     nfvEntry.delete(0, END)
-    nfvEntry.insert(0, 100)
-    ntpEntry.delete(0, END)
-    ntpEntry.insert(0, 200)
+    nfvEntry.insert(0, 6)
+    minDistEntry.delete(0, END)
+    minDistEntry.insert(0, 4)
 
-def saveValues(nfvEntry, ntpEntry, optionsWindow):
-    global framesPerVector, trackingPoints
+def saveValues(nfvEntry, minDistEntry, optionsWindow):
+    global framesPerVector, minDist
     framesPerVector = nfvEntry.get()
-    trackingPoints = ntpEntry.get()
+    minDist = minDistEntry.get()
     optionsWindow.destroy()
 
 
@@ -79,8 +80,8 @@ def main():
     window = Tk()
     window.title("EcoTracker")
 
-    #window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
-    window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+    window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+    #window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
 
     # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
     # TOP LEFT BUTTONS

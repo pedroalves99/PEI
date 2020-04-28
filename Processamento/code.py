@@ -12,7 +12,7 @@ import sys
 
 # adicionar aqui as funções
 class code():
-    def __init__(self, video_path):
+    def __init__(self, video_path, framesPerVector=6, dif=4):
         self.video_path = video_path
         # Lukas Kanade params
         self.lk_params = dict(winSize = (25, 25),
@@ -26,7 +26,7 @@ class code():
         # definir/iniciar variáveis aqui
         self.vectors_factor = 2 #fator de visualização dos arrays
         self.q = 0
-        self.dif = 4
+        self.dif = int(dif)
         self.tmp = []
         self.tmp1 = []
         self.tmp2 = []
@@ -44,7 +44,8 @@ class code():
         self.height = (self.cap).get(cv2.CAP_PROP_FRAME_HEIGHT)                                      # height do frame
         self.fps = 30.0
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')                                         # define saida
-        self.filename = 'video.avi'
+        self.filename = 'video.avi'                
+        self.framesPerVector = framesPerVector          # Options na interface funcionam
         #out = cv2.VideoWriter(load_file(filename), fourcc, fps, (int(width), int(height))) # cria o objeto VideoWriter, comentei p não estar sp a gravar
         self.t = 0
         self.vector_points = np.array([[]], dtype=np.float32)                                # variável que contem os pontos n frames antes, para fazer os vetores
@@ -117,7 +118,7 @@ class code():
                 if self.old_points.size != 0:
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
                     self.old_frame = self.gray_frame.copy()                                           # a frame em que estamos passa a ser a anterior do próximo ciclo
-                    if self.t == 6:                                                              # reset de arrays pevery 10 frames
+                    if self.t == self.framesPerVector:                                                              # reset de arrays pevery 10 frames
                         self.vector_points = self.old_points
                         self.t = 0                                                               # reset da variavel
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
