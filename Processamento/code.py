@@ -55,6 +55,12 @@ class code():
         self.flagDistance = False
         self.spline= np.zeros_like(self.p_frame)
         self.conversao = None
+        self.font = cv2.FONT_HERSHEY_COMPLEX_SMALL
+        self.org = (int(self.width-150), int(self.height-30))
+        self.fontScale = 1
+        self.color = (255, 255, 255)
+        self.thickness = 2
+
 
     # Mouse Function
     def select_point(self, event, x, y, flags, params):                                    #Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
@@ -63,6 +69,7 @@ class code():
             print("flagDistance")
             print(self.flagDistance)
             if not self.flagDistance:
+                cv2.circle(self.p_frame, (x, y), 2, (0, 255, 0), -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
 
                 if self.flag == 1:                                                            #cria os arrays que vão ter as coordenadas dos pontos clicados
                     self.old_points = np.array([[x,y]], dtype=np.float32)                     #array que vai ter as coordenadas dos pontos conforme o movimento
@@ -72,15 +79,13 @@ class code():
                     self.add_point(x, y)
 
             else:
+                cv2.circle(self.p_frame, (x, y), 2, (0, 0, 255), -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
                 if self.flag1 == 1:
                     self.vector_distance_2points = np.array([[x,y]], dtype=np.float32) #adiciona os 2 pontos selecionados para calcular a distancia
                     self.flag1 += 1
                 else:
                     self.add_point_distance(x, y)
 
-
-            cv2.circle(self.p_frame, (x, y), 2, (0, 255, 0), -1)                          #sempre que é clicado na imagem, faz um circulo a volta das coord
-            # print(old_points)
 
     def execute(self):
         cv2.namedWindow("Frame")
@@ -89,13 +94,20 @@ class code():
             cv2.imshow('Frame', self.p_frame)
             if cv2.waitKey(27) & 0xFF == ord('p'):
                 break
+
             # cof cof
             if cv2.waitKey(27) & 0xFF == ord('d'):
+                self.conversao = self.findScale(self.p_frame)
                 self.flagDistance = True
-                self.conversao = self.distanceBetween2points(self.p_frame)
+                print("Flag Distance")
                 print(self.flagDistance)
+
+            if len(self.vector_distance_2points) == 2:
+                self.flagDistance = False
+                self.array_distance_first_frame = self.vector_distance_2points
+
         while True:
-            check, self.frame = (self.cap).read()                                                   # le frame a frame
+            check, self.frame = self.cap.read()                                                   # le frame a frame
             self.t += 1
             if not check:                                                               # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
                 cap1 = cv2.VideoCapture(self.video_path)# abrir nova captura
@@ -111,13 +123,14 @@ class code():
                 self.old_points = self.origin_points
                 self.q = 0
                 self.vector_points = np.array([[]], dtype=np.float32)                        # variável que contem os pontos n frames antes, para fazer os vetores
+                self.vector_distance_2points = self.array_distance_first_frame
+
             else:
                 self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
             if self.point_selected is True:                                                  # Uma vez que um ponto é selecionado faz o Tracking
                 if self.old_points.size != 0:
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
-                    self.old_frame = self.gray_frame.copy()                                           # a frame em que estamos passa a ser a anterior do próximo ciclo
-                    if self.t == 9:                                                              # reset de arrays pevery 10 frames
+                    if self.t == 15:                                                              # reset de arrays pevery 10 frames
                         self.vector_points = self.old_points
                         self.t = 0                                                               # reset da variavel
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
@@ -129,20 +142,30 @@ class code():
                         self.old_points = self.track_points
                         self.vector_points = self.track_points
                         self.q = 1
-                    cv2.imshow("Frame", self.frame)
+
                     self.spline = np.zeros_like(self.spline)                                        # reset
-                if self.flagDistance:
-                    self.distanciaIntroduzida = hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
-                                                  self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
-                if self.conversao is not None:
-                    self.distanciaCM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
-                    print(self.distanciaCM)
+
+            if len(self.vector_distance_2points) == 2:
+                self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
+                                              self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
+
+                self.vector_distance_2points = self.trackDistancePoints()
+
+            self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
+
+            if self.conversao is not None:
+                self.distanciaCM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
+                self.distanciaCM = round(self.distanciaCM, 4)
+                print(self.distanciaCM)
+                image = cv2.putText(self.frame, str(self.distanciaCM)+ " cm", self.org, self.font, self.fontScale, self.color, self.thickness, cv2.LINE_AA)
                 # comentado p nao estar sp a grvar
                 # out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
+            cv2.imshow("Frame", self.frame)
             self.key = cv2.waitKey(27)
             if self.key == 27: # ESC
                 break
                 self.close += 1
+
         self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4), sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
         self.histogram(self.arrayArrows, self.arrayMedidas)
         plt.show()
@@ -208,7 +231,19 @@ class code():
     def add_point_distance(self, x, y):
         global vector_distance_2points
         a_point_distance = np.array([[x, y]], dtype=np.float32)
-        self.vector_distance_2points = np.append(a_point_distance, vector_distance_2points, axis=0)  # faz append das coordenadas ao array
+        self.vector_distance_2points = np.append(a_point_distance, self.vector_distance_2points, axis=0)  # faz append das coordenadas ao array
+
+    def trackDistancePoints(self):
+
+        new_points, status, error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
+                                                                            self.vector_distance_2points, None,
+                                                                            **self.lk_params)  # tracking Luccas Kanade, Optial flow
+
+        for x, y in new_points:
+            cv2.circle(self.frame, (x, y), 2, (0, 0, 255), -1)
+
+        return new_points
+
 
     # save_video('video.avi', 20, mirror=True)   depois vejo...
 
@@ -218,8 +253,7 @@ class code():
             if(self.check==True):
                 out.write(frame)
 
-    def distanceBetween2points(self, p_frame):
-        global old_points
+    def findScale(self, p_frame):
         contour1 = np.zeros_like(p_frame)
         gray_frame = cv2.cvtColor(p_frame, cv2.COLOR_BGR2GRAY)
         ret, thresh = cv2.threshold(gray_frame, 127, 255, 0)
@@ -264,7 +298,7 @@ class code():
             if self.vector_points.size != 0:
                 grad_x, grad_y = x - self.vector_points[i][0], y - self.vector_points[i][1]
                 cv2.arrowedLine(self.frame, (x, y), (x + grad_x, y + grad_y), (0, 255, 255), 1)      #f1 fator de aumento, para melhor visualização, ainda n foi posto
-                tamanho = self.hipote(x, y, x + 2 * grad_x, y + 2* grad_y)
+                tamanho = self.hipote(x, y, x + grad_x, y + grad_y)
                 # print(tamanho)
                 exit = self.direcao(x + grad_x, x, y + grad_y,
                                y)  # prints the direction of the cardinal points between two points!!
