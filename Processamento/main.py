@@ -2,15 +2,14 @@ from tkinter import *
 from tkinter import filedialog as fd
 from tkinter import messagebox as mb
 from code import code
-#testing purpouses, replace by actual values later
+
+#Default Values
 framesPerVector = 6
 minDist = 4
 
 
 def getFileDir():
     filename = fd.askopenfilename(filetypes=[("Video files",".avi .wmv .mp4")])
-    print("minDist: ", minDist)
-    print("FramesPerVector: ", framesPerVector)
     code(filename, framesPerVector, minDist).execute()
     # começar tracking
 def saveFileDir():

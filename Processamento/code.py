@@ -12,7 +12,7 @@ import sys
 
 # adicionar aqui as funções
 class code():
-    def __init__(self, video_path):
+    def __init__(self, video_path, framesPerVector=6, minDist=4):
         self.video_path = video_path
         # Lukas Kanade params
         self.lk_params = dict(winSize = (25, 25),
@@ -26,7 +26,10 @@ class code():
         # definir/iniciar variáveis aqui
         self.vectors_factor = 1 #fator de visualização dos arrays
         self.q = 0
-        self.dif = 4
+        ### CASAS ###
+        self.dif = int(minDist)
+        self.framesPerVector = int(framesPerVector)
+        ###### SE NÃO DEREM ARGS ELE ASSUME AQUELES VALORES DEPOIS DO = LÁ EM CIMA
         self.tmp = []
         self.tmp1 = []
         self.tmp2 = []
@@ -130,7 +133,7 @@ class code():
             if self.point_selected is True:                                                  # Uma vez que um ponto é selecionado faz o Tracking
                 if self.old_points.size != 0:
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
-                    if self.t == 15:                                                              # reset de arrays pevery 10 frames
+                    if self.t == self.framesPerVector:                                                              # reset de arrays pevery 10 frames
                         self.vector_points = self.old_points
                         self.t = 0                                                               # reset da variavel
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
