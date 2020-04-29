@@ -7,27 +7,53 @@ from code import code
 framesPerVector = 6
 minDist = 4
 
+def main():
+
+    window = Tk()
+    window.title("EcoTracker")
+
+    window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+    #window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+
+    # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
+    # TOP LEFT BUTTONS
+    histogramBt = Button(window, text="Histogram", width=10, height=2).grid(row=1, column=1)
+    compassRoseBt = Button(window, text="Compass Rose", width=10, height=2).grid(row=1, column=2)
+
+    # VIDEO CANVAS
+    videoCanvas = Canvas(window, width=1000, height=700)
+    videoCanvas.grid(row=1, column=3, rowspan=10, padx=15, pady=10)
+    videoCanvas.configure(bg='grey')
+
+
+    # TOP RIGHT BUTTONS
+    openBt = Button(window, text="Open", width=10, command=getFileDir).grid(row=1, column=5, columnspan=2)
+    saveAsBt = Button(window, text="Save As", width=10, command=saveFileDir).grid(row=2, column=5, columnspan=2)
+    resetPointsBt = Button(window, text="Reset Points", width=10).grid(row=3, column=5, columnspan=2)
+    
+    # BOTTOM RIGHT BUTTONS
+    preferencesBt = Button(window, text="Preferences", width=10, command=optionsWindow).grid(row=10, column=5, pady=(400,10))
+    playbackSpeedLb = Label(window, text="Playback Speed", font="helvetica 10 bold").grid(row=11, column=5)
+    oneBt = Button(window, text="1x", width=1).grid(row=12, column=5, sticky=E)
+    seventyFiveBt = Button(window, text="0.75x", width=1).grid(row=12, column=5)
+    halfBt = Button(window, text="0.5x", width=1).grid(row=12, column=5, sticky=W)
+
+    window.mainloop()
+
+
+
 
 def getFileDir():
     filename = fd.askopenfilename(filetypes=[("Video files",".avi .wmv .mp4")])
     code(filename, framesPerVector, minDist).execute()
-    # começar tracking
+
+
 def saveFileDir():
     global filename
     filename = fd.asksaveasfilename()  
     mb.showinfo(title="Done!", message="Saved successfully!") 
     # save com o code.py
 
-def saveFile():
-    global filename
-    try:
-        filename
-    except NameError:
-        mb.showerror(title="Error Saving", message="Please 'Save As' before saving")
-    else:
-        mb.showinfo(title="Done!", message="Saved successfully!")
-
-    # save com o code.py
 
 def optionsWindow():
     optionsWindow = Toplevel()
@@ -72,37 +98,6 @@ def saveValues(nfvEntry, minDistEntry, optionsWindow):
     framesPerVector = nfvEntry.get()
     minDist = minDistEntry.get()
     optionsWindow.destroy()
-
-
-def main():
-
-    window = Tk()
-    window.title("EcoTracker")
-
-    window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
-    #window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
-
-    # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
-    # TOP LEFT BUTTONS
-    histogramBt = Button(window, text="Histogram", width=10, height=2).grid(row=1, column=1)
-    compassRoseBt = Button(window, text="Compass Rose", width=10, height=2).grid(row=1, column=2, padx=(0,1060))
-
-    # TOP RIGHT BUTTONS
-
-    openBt = Button(window, text="Open", width=10, command=getFileDir).grid(row=1, column=3, columnspan=2)
-    saveBt = Button(window, text="Save", width=10, command=saveFile).grid(row=2, column=3, columnspan=2)
-    saveAsBt = Button(window, text="Save As", width=10, command=saveFileDir).grid(row=3, column=3, columnspan=2)
-    resetPointsBt = Button(window, text="Reset Points", width=10).grid(row=4, column=3, columnspan=2)
-    
-    # BOTTOM RIGHT BUTTONS
-    preferencesBt = Button(window, text="Preferences", width=10, command=optionsWindow).grid(row=10, column=3, pady=(400,10))
-    playbackSpeedLb = Label(window, text="Playback Speed", font="helvetica 10 bold").grid(row=11, column=3)
-    oneBt = Button(window, text="1x", width=1).grid(row=12, column=3, sticky=E)
-    seventyFiveBt = Button(window, text="0.75x", width=1).grid(row=12, column=3)
-    halfBt = Button(window, text="0.5x", width=1).grid(row=12, column=3, sticky=W)
-
-    window.mainloop()
-
 
 if __name__ == '__main__':
     main()
