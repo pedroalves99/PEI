@@ -12,10 +12,13 @@ import sys
 
 # adicionar aqui as funções
 class code():
-    def __init__(self, video_path, framesPerVector=6, minDist=4):
+    def __init__(self, video_path, framesPerVector= 3, minDist= 2):
         self.video_path = video_path
         # Lukas Kanade params
-        self.lk_params = dict(winSize = (25, 25),
+        self.lk_params_dist = dict(winSize = (10, 10),      # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
+                         maxLevel = 4,
+                         criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
+        self.lk_params = dict(winSize = (30, 30),
                          maxLevel = 4,
                          criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
         self.cap = cv2.VideoCapture(video_path)                                               # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio(para já))
@@ -24,7 +27,7 @@ class code():
         _, self.p_frame = self.cap.read()                                                          # no video lê a primeira frame
         self.old_frame = cv2.cvtColor(self.p_frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
         # definir/iniciar variáveis aqui
-        self.vectors_factor = 1 #fator de visualização dos arrays
+        self.vectors_factor = 3 #fator de visualização dos arrays
         self.q = 0
         ### CASAS ###
         self.dif = int(minDist)
@@ -64,8 +67,9 @@ class code():
         self.color = (255, 255, 255)
         self.thickness = 2
         self.array_distance_first_frame = np.array([[]], dtype=np.float32)
+        self.flag_hist = 1
 
-    # Mouse Function
+        # Mouse Function
     def select_point(self, event, x, y, flags, params):                                    #Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
         if event == cv2.EVENT_LBUTTONDOWN:                                           #quando se clica no lado esquerdo  do rato
             self.point_selected = True
@@ -114,18 +118,19 @@ class code():
             self.t += 1
 
             if not check:                                                               # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
-                self.counts = defaultdict(int)
-                self.tmp = []
-                print("check")
-                print(self.tmp)
+                print(self.counts)
+                #self.counts = defaultdict(int)
+                print("o")
+                print(self.counts)
 
-                self.tmp1 = []
-                self.tmp2 = []
-                self.tmp3 = []
-                self.tmp4 = []
-                self.tmp5 = []
-                self.tmp6 = []
-                self.tmp7 = []
+                #self.tmp = []
+                # self.tmp1 = []    resolvi com o self.flag_hist
+                # self.tmp2 = []
+                # self.tmp3 = []
+                # self.tmp4 = []
+                # self.tmp5 = []
+                # self.tmp6 = []
+                # self.tmp7 = []
 
                 cap1 = cv2.VideoCapture(self.video_path)# abrir nova captura
                 if not cap1.isOpened():
@@ -140,7 +145,9 @@ class code():
                 self.old_points = self.origin_points
                 self.q = 0
                 self.vector_points = np.array([[]], dtype=np.float32)                        # variável que contem os pontos n frames antes, para fazer os vetores
+                self.t = 0
                 self.vector_distance_2points = self.array_distance_first_frame
+                self.flag_hist = 0                                                          #já acabou o ciclo não desenha mais histograma
 
             else:
                 self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
@@ -149,7 +156,7 @@ class code():
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
                     if self.t == self.framesPerVector:                                                              # reset de arrays pevery 10 frames
                         self.vector_points = self.old_points
-                        self.t == 0                                                                # reset da variavel
+                        self.t = 0                                                                # reset da variavel
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
                     self.old_points = self.new_points                                                 # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)                              #draw spline with the new points
@@ -168,7 +175,7 @@ class code():
                 self.vector_distance_2points = self.trackDistancePoints()
                 self.distanciaCM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
                 self.distanciaCM = round(self.distanciaCM, 4)
-                print(self.distanciaCM)
+
                 image = cv2.putText(self.frame, str(self.distanciaCM)+ " cm", self.org, self.font, self.fontScale, self.color, self.thickness, cv2.LINE_AA)
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
@@ -181,8 +188,7 @@ class code():
 
         self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),
                              sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
-        print("soma array")
-        print(sum(self.tmp))
+
         self.histogram(self.arrayArrows, self.arrayMedidas)
 
 
@@ -258,7 +264,7 @@ class code():
 
         new_points, status, error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
                                                                             self.vector_distance_2points, None,
-                                                                            **self.lk_params)  # tracking Luccas Kanade, Optial flow
+                                                                            **self.lk_params_dist)  # tracking Luccas Kanade, Optial flow
 
         for x, y in new_points:
             cv2.circle(self.frame, (x, y), 2, (0, 0, 255), -1)
@@ -318,44 +324,47 @@ class code():
             cv2.circle(self.frame, (x, y), 1, (0, 255,), -1)
             if self.vector_points.size == points_to_track.size:
                 grad_x, grad_y = x - self.vector_points[i][0], y - self.vector_points[i][1]
-                cv2.arrowedLine(self.frame, (x, y), (x + grad_x, y + grad_y), (0, 255, 255), 1)      #f1 fator de aumento, para melhor visualização, ainda n foi posto
-                tamanho = self.hipote(x, y, x + grad_x, y + grad_y)
-                tamanho = tamanho / self.conversao
-                # print(tamanho)
-                exit = self.direcao(x + grad_x, x, y + grad_y,
-                               y)  # prints the direction of the cardinal points between two points!!
-                # print(exit)
-                if exit == self.cardinal_points[
-                    0]:  # tamanho pixeis de cada posição 'N' ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
-                    self.tmp.append(tamanho)
-                    print("soma")
-                    print(sum(self.tmp))
-                if exit == self.cardinal_points[1]:  # 'NE'
-                    #print("test")
-                    self.tmp1.append(tamanho)
-                    print(self.tmp1)
-                if exit == self.cardinal_points[2]:  # 'E'
-                    self.tmp2.append(tamanho)
-                    # print(tmp2)
-                if exit == self.cardinal_points[3]:  # 'SE'
-                    self.tmp3.append(tamanho)
-                    # print(tmp3)
-                if exit == self.cardinal_points[4]:  # 'S'
-                    self.tmp4.append(tamanho)
-                    # print(tmp4)
-                if exit == self.cardinal_points[5]:  # 'SW'
-                    self.tmp5.append(tamanho)
-                    # print(tmp5)
-                if exit == self.cardinal_points[6]:  # 'W'
-                    self.tmp6.append(tamanho)
-                    # print(tmp6)
-                if exit == self.cardinal_points[7]:  # 'NW'
-                    self.tmp7.append(tamanho)
-                    # print(tmp7)
+                val_x = int(x + (f1 * grad_x))                                              #fator
+                val_y = int(y + (f1 * grad_y))
+                cv2.arrowedLine(self.frame, (x, y), (val_x, val_y), (0, 255, 255), 1)      #f1 fator de aumento, para melhor visualização, ainda n foi posto
 
-                for cardinal_point in self.cardinal_points:
-                    # this assumes exit.count() returns an int
-                    self.counts[cardinal_point] += exit.count(cardinal_point)  # counts the number of times North appears
+                if self.flag_hist == 1:                                                          #faz 1 so vez, depois do primeiro ciclo a variavel é atualizada
+                    tamanho = self.hipote(x, y, x + grad_x, y + grad_y)
+                    tamanho = tamanho / self.conversao
+                    # print(tamanho)
+                    exit = self.direcao(x + grad_x, x, y + grad_y,
+                                   y)  # prints the direction of the cardinal points between two points!!
+                    # print(exit)
+                    if exit == self.cardinal_points[
+                        0]:  # tamanho pixeis de cada posição 'N' ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+                        self.tmp.append(tamanho)
+
+                    if exit == self.cardinal_points[1]:  # 'NE'
+                        #print("test")
+                        self.tmp1.append(tamanho)
+
+                    if exit == self.cardinal_points[2]:  # 'E'
+                        self.tmp2.append(tamanho)
+                        # print(tmp2)
+                    if exit == self.cardinal_points[3]:  # 'SE'
+                        self.tmp3.append(tamanho)
+                        # print(tmp3)
+                    if exit == self.cardinal_points[4]:  # 'S'
+                        self.tmp4.append(tamanho)
+                        # print(tmp4)
+                    if exit == self.cardinal_points[5]:  # 'SW'
+                        self.tmp5.append(tamanho)
+                        # print(tmp5)
+                    if exit == self.cardinal_points[6]:  # 'W'
+                        self.tmp6.append(tamanho)
+                        # print(tmp6)
+                    if exit == self.cardinal_points[7]:  # 'NW'
+                        self.tmp7.append(tamanho)
+                        # print(tmp7)
+
+                    for cardinal_point in self.cardinal_points:
+                        # this assumes exit.count() returns an int
+                        self.counts[cardinal_point] += exit.count(cardinal_point)  # counts the number of times North appears
 
                     # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
                     # print(tmp)
