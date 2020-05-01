@@ -18,8 +18,8 @@ class App:
         self.yFactor = 0.0
         self.window.title("EcoTracker")
 
-        self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
-        #self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+        #self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+        self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
 
         # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
         # TOP LEFT BUTTONS
@@ -171,14 +171,14 @@ class App:
         optionsWindow.destroy()
 
     def play(self):
-        if self.playing:
-            self.pauseButton.grid_remove()
-            self.playButton.grid()
-            self.playing = False
-        else:
+        if self.video.pause:                    # usar a variavel do code.py
             self.playButton.grid_remove()
             self.pauseButton.grid()
-            self.playing = True
+            self.video.pause = False
+        else:
+            self.pauseButton.grid_remove()
+            self.playButton.grid()
+            self.video.pause = True
 
 
 if __name__ == '__main__':

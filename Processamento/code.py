@@ -69,7 +69,7 @@ class code():
         self.thickness = 2
         self.array_distance_first_frame = np.array([[]], dtype=np.float32)
         self.flag_hist = 1
-        self.pause = 0
+        self.pause = True
 
         # Mouse Function
 
@@ -81,9 +81,6 @@ class code():
         if self.pause:                                                                      # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
 
             #cv2.imshow('Frame', self.frame)
-            if self.key =='p':
-                self.pause = 0
-
 
             if self.key == 'd':
                 self.flagDistance = True
