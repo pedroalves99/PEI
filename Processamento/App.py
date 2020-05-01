@@ -32,11 +32,11 @@ class App:
         self.videoCanvas.configure(bg='grey')
 
         # Start allows first frame to show up, playing decides which button to show
-        self.playing = False 
+        self.playing = False        # *está comentada no update()
         self.start = True
-        ######## PROBLEMAS -> NO UPDATE O PRIMEIRO FRAME SÓ MOSTRA SE ESTIVER TRUE
-        ########           -> NÃO DÁ PARA METER PONTOS SE O VÍDEO NÃO ESTIVER A CORRER (???)
-        ########           -> MOUSE POSITION COM OFFSET (???)
+        ######## PROBLEMAS -> NO UPDATE O PRIMEIRO FRAME SÓ MOSTRA SE ESTIVER TRUE*
+        ########           -> NÃO DÁ PARA METER PONTOS SE O VÍDEO NÃO ESTIVER A CORRER*
+        ########           -> MOUSE POSITION COM OFFSET SE TIVER NO CANVAS INTEIRO
 
         # PLAY BUTTON
         self.playImage = PhotoImage(file="playbutton.png")  
@@ -103,7 +103,7 @@ class App:
 
     def update(self):                                                           #função que serve de loop, chamada consoante o valor do self.delay em ms
 
-        if self.filename is not None and self.playing:
+        if self.filename is not None:   # and self.playing:
             self.frame = cv2.cvtColor(self.video.frame, cv2.COLOR_BGR2RGB)#Rgb to Bgr
             self.resized = PIL.Image.fromarray(self.frame)  #.resize((self.videoCanvas.winfo_width(), self.videoCanvas.winfo_height()))
             self.photo = PIL.ImageTk.PhotoImage(image=self.resized)
