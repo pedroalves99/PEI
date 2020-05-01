@@ -16,8 +16,8 @@ class App:
         self.window = Tk()
         self.window.title("EcoTracker")
 
-        #window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
-        self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+        self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+        #self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
 
         # POSIÇÕES ADAPTADAS AO ECRÃ DO CASAS
         # TOP LEFT BUTTONS
@@ -25,10 +25,24 @@ class App:
         self.compassRoseBt = Button(self.window, text="Compass Rose", width=10, height=2).grid(row=1, column=2)
 
         # VIDEO CANVAS
-        self.videoCanvas = Canvas(self.window, width = 1000, height = 700)
-        self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=15, pady=10)
+        self.videoCanvas = Canvas(self.window, width = 1000, height = 650)
+        self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=15, pady=(10,0))
         self.videoCanvas.configure(bg='grey')
+        
+        # PLAY BUTTON
+        self.playImage = PhotoImage(file="playbutton.png")  
+        self.playButton = Button(self.window, width=50, height=50, image=self.playImage)
+        self.playButton["border"] = "0"
+        self.playButton.grid(row=11, column=3)
 
+        # PAUSE BUTTON
+        self.pauseImage = PhotoImage(file="pausebutton.png")  
+        self.pauseButton = Button(self.window, width=50, height=50, image=self.pauseImage)
+        self.pauseButton["border"] = "0"
+        
+
+        self.playing = False        # False -> play button shows // True -> pause button shows
+        # DO THIS WHEN CHANGED ->       self.pauseButton.grid(row=11, column=3)
 
         # TOP RIGHT BUTTONS
         self.openBt = Button(self.window, text="Open", width=10, command=self.getFileDir).grid(row=1, column=5, columnspan=2)
@@ -36,11 +50,11 @@ class App:
         self.resetPointsBt = Button(self.window, text="Reset Points", width=10).grid(row=3, column=5, columnspan=2)
 
         # BOTTOM RIGHT BUTTONS
-        self.preferencesBt = Button(self.window, text="Preferences", width=10, command=self.optionsWindow).grid(row=10, column=5, pady=(400,10))
-        self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=11, column=5)
-        self.oneBt = Button(self.window, text="1x", width=1).grid(row=12, column=5, sticky=E)
-        self.seventyFiveBt = Button(self.window, text="0.75x", width=1).grid(row=12, column=5)
-        self.halfBt = Button(self.window, text="0.5x", width=1).grid(row=12, column=5, sticky=W)
+        self.preferencesBt = Button(self.window, text="Preferences", width=10, command=self.optionsWindow).grid(row=7, column=5, pady=(300,10))
+        self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=8, column=5, pady=0)
+        self.oneBt = Button(self.window, text="1x", width=1).grid(row=9, column=5, sticky=E)
+        self.seventyFiveBt = Button(self.window, text="0.75x", width=1).grid(row=9, column=5)
+        self.halfBt = Button(self.window, text="0.5x", width=1).grid(row=9, column=5, sticky=W)
         self.filename = None
 
         self.delay = 15
@@ -80,7 +94,8 @@ class App:
 
         if self.filename is not None:
             self.frame = cv2.cvtColor(self.video.frame, cv2.COLOR_BGR2RGB)#Rgb to Bgr
-            self.photo = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(self.frame))
+            self.resized = PIL.Image.fromarray(self.frame).resize((self.videoCanvas.winfo_width(), self.videoCanvas.winfo_height()))
+            self.photo = PIL.ImageTk.PhotoImage(image=self.resized)
             self.videoCanvas.create_image(0, 0, image=self.photo, anchor=NW)
             self.video.execute()
             self.videoCanvas.bind("<Button 1>", self.select_point)
