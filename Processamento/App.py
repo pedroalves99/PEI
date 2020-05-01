@@ -14,6 +14,8 @@ class App:
 
     def __init__(self):
         self.window = Tk()
+        self.xFactor = 0.0
+        self.yFactor = 0.0
         self.window.title("EcoTracker")
 
         self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
@@ -28,20 +30,29 @@ class App:
         self.videoCanvas = Canvas(self.window, width = 1000, height = 650)
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=15, pady=(10,0))
         self.videoCanvas.configure(bg='grey')
-        
+
+        # Start allows first frame to show up, playing decides which button to show
+        self.playing = False 
+        self.start = True
+        ######## PROBLEMAS -> NO UPDATE O PRIMEIRO FRAME SÓ MOSTRA SE ESTIVER TRUE
+        ########           -> NÃO DÁ PARA METER PONTOS SE O VÍDEO NÃO ESTIVER A CORRER (???)
+        ########           -> MOUSE POSITION COM OFFSET (???)
+
         # PLAY BUTTON
         self.playImage = PhotoImage(file="playbutton.png")  
-        self.playButton = Button(self.window, width=50, height=50, image=self.playImage)
+        self.playButton = Button(self.window, width=50, height=50, image=self.playImage, command=self.play)
         self.playButton["border"] = "0"
         self.playButton.grid(row=11, column=3)
 
         # PAUSE BUTTON
         self.pauseImage = PhotoImage(file="pausebutton.png")  
-        self.pauseButton = Button(self.window, width=50, height=50, image=self.pauseImage)
+        self.pauseButton = Button(self.window, width=50, height=50, image=self.pauseImage, command=self.play)
         self.pauseButton["border"] = "0"
+        self.pauseButton.grid(row=11, column=3)
+        self.pauseButton.grid_remove()
         
 
-        self.playing = False        # False -> play button shows // True -> pause button shows
+
         # DO THIS WHEN CHANGED ->       self.pauseButton.grid(row=11, column=3)
 
         # TOP RIGHT BUTTONS
@@ -92,9 +103,9 @@ class App:
 
     def update(self):                                                           #função que serve de loop, chamada consoante o valor do self.delay em ms
 
-        if self.filename is not None:
+        if self.filename is not None and self.playing:
             self.frame = cv2.cvtColor(self.video.frame, cv2.COLOR_BGR2RGB)#Rgb to Bgr
-            self.resized = PIL.Image.fromarray(self.frame).resize((self.videoCanvas.winfo_width(), self.videoCanvas.winfo_height()))
+            self.resized = PIL.Image.fromarray(self.frame)  #.resize((self.videoCanvas.winfo_width(), self.videoCanvas.winfo_height()))
             self.photo = PIL.ImageTk.PhotoImage(image=self.resized)
             self.videoCanvas.create_image(0, 0, image=self.photo, anchor=NW)
             self.video.execute()
@@ -158,6 +169,17 @@ class App:
         framesPerVector = nfvEntry.get()
         minDist = minDistEntry.get()
         optionsWindow.destroy()
+
+    def play(self):
+        if self.playing:
+            self.pauseButton.grid_remove()
+            self.playButton.grid()
+            self.playing = False
+        else:
+            self.playButton.grid_remove()
+            self.pauseButton.grid()
+            self.playing = True
+
 
 if __name__ == '__main__':
     App()
