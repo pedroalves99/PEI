@@ -24,8 +24,8 @@ class code():
         self.cap = cv2.VideoCapture(video_path)                                               # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio(para já))
         print(self.video_path)
         print((self.cap).isOpened())
-        _, self.p_frame = self.cap.read()                                                          # no video lê a primeira frame
-        self.old_frame = cv2.cvtColor(self.p_frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
+        _, self.frame = self.cap.read()                                                          # no video lê a primeira frame
+        self.old_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
         # definir/iniciar variáveis aqui
         self.vectors_factor = 3 #fator de visualização dos arrays
         self.q = 0
@@ -59,61 +59,43 @@ class code():
         self.new_points = np.array([[]], dtype=np.float32)
         self.origin_points = np.array([[]], dtype=np.float32)
         self.flagDistance = False
-        self.spline= np.zeros_like(self.p_frame)
+        self.spline= np.zeros_like(self.frame)
         self.conversao = None
         self.font = cv2.FONT_HERSHEY_COMPLEX_SMALL
         self.org = (int(self.width-150), int(self.height-30))
         self.fontScale = 1
         self.color = (255, 255, 255)
+        self.key = None
         self.thickness = 2
         self.array_distance_first_frame = np.array([[]], dtype=np.float32)
         self.flag_hist = 1
+        self.pause = 0
 
         # Mouse Function
-    def select_point(self, event, x, y, flags, params):                                    #Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
-        if event == cv2.EVENT_LBUTTONDOWN:                                           #quando se clica no lado esquerdo  do rato
-            self.point_selected = True
-            print("flagDistance")
-            print(self.flagDistance)
-            if not self.flagDistance:
-                cv2.circle(self.p_frame, (x, y), 2, (0, 255, 0), -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
-
-                if self.flag == 1:                                                            #cria os arrays que vão ter as coordenadas dos pontos clicados
-                    self.old_points = np.array([[x,y]], dtype=np.float32)                     #array que vai ter as coordenadas dos pontos conforme o movimento
-                    self.origin_points = np.array([[x,y]], dtype=np.float32)                  #array que apenas vai conter as coordenadas dos pontos selecionados no inicio(útil para o loop)
-                    self.flag += 1
-                else:
-                    self.add_point(x, y)
-
-            else:
-                cv2.circle(self.p_frame, (x, y), 2, (0, 0, 255), -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
-                if self.flag1 == 1:
-                    self.vector_distance_2points = np.array([[x,y]], dtype=np.float32) #adiciona os 2 pontos selecionados para calcular a distancia
-                    self.flag1 += 1
-                else:
-                    self.add_point_distance(x, y)
-
 
     def execute(self):
-        cv2.namedWindow("Frame")
-        cv2.setMouseCallback("Frame", self.select_point)                                      # quando se carrega no rato ativa a funçao select_point
-        self.conversao = self.findScale(self.p_frame)
-        while True:                                                                      # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
-            cv2.imshow('Frame', self.p_frame)
-            if cv2.waitKey(27) & 0xFF == ord('p'):
-                break
+        #cv2.namedWindow("Frame")
+        #cv2.setMouseCallback("Frame", self.select_point)                                      # quando se carrega no rato ativa a funçao select_point
+        self.conversao = self.findScale(self.frame)
 
-            # cof cof
-            if cv2.waitKey(27) & 0xFF == ord('d'):
+        if self.pause:                                                                      # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
+
+            #cv2.imshow('Frame', self.frame)
+            if self.key =='p':
+                self.pause = 0
+
+
+            if self.key == 'd':
                 self.flagDistance = True
-                print("Flag Distance")
                 print(self.flagDistance)
 
             if len(self.vector_distance_2points) == 2:
                 self.flagDistance = False
                 self.array_distance_first_frame = self.vector_distance_2points
 
-        while True:
+        else:
+            if self.key == 's':
+                self.pause = 1
             check, self.frame = self.cap.read()                                                   # le frame a frame
             self.t += 1
 
@@ -123,21 +105,14 @@ class code():
                 print("o")
                 print(self.counts)
 
-                #self.tmp = []
-                # self.tmp1 = []    resolvi com o self.flag_hist
-                # self.tmp2 = []
-                # self.tmp3 = []
-                # self.tmp4 = []
-                # self.tmp5 = []
-                # self.tmp6 = []
                 # self.tmp7 = []
 
                 cap1 = cv2.VideoCapture(self.video_path)# abrir nova captura
                 if not cap1.isOpened():
                     print("Erro")
                     exit()
-                _, self.p_frame = cap1.read()                                                # le o frame anterior
-                self.old_frame = cv2.cvtColor(self.p_frame, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
+                _, self.frame = cap1.read()                                                # le o frame anterior
+                self.old_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
                 _, self.frame1 = cap1.read()                                                 # le o frame atual
                 self.gray_frame = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
                 self.cap = cap1                                                              # atualiza as variaveis
@@ -180,19 +155,17 @@ class code():
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
                 # out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
-            cv2.imshow("Frame", self.frame)
-            self.key = cv2.waitKey(27)
-            if self.key == 27: # ESC
-                break
-                self.close += 1
-
-        self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),
-                             sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
-
-        self.histogram(self.arrayArrows, self.arrayMedidas)
+            #cv2.imshow("Frame", self.frame)
 
 
-        plt.show()
+
+        #self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
+
+        #self.histogram(self.arrayArrows, self.arrayMedidas)
+
+
+        #plt.show()
+    def __del__(self):
         self.cap.release()
         cv2.destroyAllWindows()
 
