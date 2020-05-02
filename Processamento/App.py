@@ -91,7 +91,7 @@ class App:
             else:
                 self.video.add_point(event.x, event.y)
 
-        else:
+        if self.video.flagDistance:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 0, 255),
                        -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
             if self.video.flag1 == 1:
@@ -100,6 +100,17 @@ class App:
                 self.video.flag1 += 1
             else:
                 self.video.add_point_distance(event.x, event.y)
+
+        if self.video.flagDistancePerpendicular:
+            cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 0, 255),
+                       -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
+            if self.video.flag2 == 1:
+                self.video.vector_distance_perpendicular_2points = np.array([[event.x, event.y]],
+                                                              dtype=np.float32)  # adiciona os 2 pontos selecionados para calcular a distancia
+                self.video.flag2 += 1
+            else:
+                self.video.add_point_distance_perpendicular(event.x, event.y)
+
 
     def update(self):                                                           #função que serve de loop, chamada consoante o valor do self.delay em ms
 
@@ -124,6 +135,9 @@ class App:
         filename = fd.asksaveasfilename()
         mb.showinfo(title="Done!", message="Saved successfully!")
         # save com o code.py
+        self.video.flagDistancePerpendicular = True
+        print("flag distance perpendicular")
+        print(self.video.flagDistancePerpendicular)
 
 
     def optionsWindow(self):

@@ -46,6 +46,7 @@ class code():
         self.point_selected = False
         self.flag = 1
         self.flag1 = 1
+        self.flag2 = 1
         self.width = (self.cap).get(cv2.CAP_PROP_FRAME_WIDTH)                                        # width do frame
         self.height = (self.cap).get(cv2.CAP_PROP_FRAME_HEIGHT)                                      # height do frame
         self.fps = 30.0
@@ -55,19 +56,23 @@ class code():
         self.t = 0
         self.vector_points = np.array([[]], dtype=np.float32)                                # variável que contem os pontos n frames antes, para fazer os vetores
         self.vector_distance_2points = np.array([[]], dtype=np.float32)                      # variavel que contem os 2 pontos para calcular a distancia
+        self.vector_distance_perpendicular_2points = np.array([[]], dtype=np.float32)        # variavel que contem os 2 pontos para calcular a distancia perpendicular
         self.old_points = np.array([[]], dtype=np.float32)
         self.new_points = np.array([[]], dtype=np.float32)
         self.origin_points = np.array([[]], dtype=np.float32)
         self.flagDistance = False
+        self.flagDistancePerpendicular = False
         self.spline= np.zeros_like(self.frame)
         self.conversao = None
         self.font = cv2.FONT_HERSHEY_COMPLEX_SMALL
         self.org = (int(self.width-150), int(self.height-30))
         self.fontScale = 1
-        self.color = (255, 255, 255)
+        self.color = (0, 0, 255)
+        self.color2 = (255, 0, 255)
         self.key = None
         self.thickness = 2
         self.array_distance_first_frame = np.array([[]], dtype=np.float32)
+        self.array_distance_perpendicular_first_frame = np.array([[]], dtype=np.float32)
         self.flag_hist = 1
         self.pause = True
 
@@ -82,13 +87,13 @@ class code():
 
             #cv2.imshow('Frame', self.frame)
 
-            if self.key == 'd':
-                self.flagDistance = True
-                print(self.flagDistance)
-
             if len(self.vector_distance_2points) == 2:
                 self.flagDistance = False
                 self.array_distance_first_frame = self.vector_distance_2points
+
+            if len(self.vector_distance_perpendicular_2points) == 2:
+                self.flagDistancePerpendicular = False
+                self.array_distance_perpendicular_first_frame = self.vector_distance_perpendicular_2points
 
         else:
             if self.key == 's':
@@ -119,6 +124,7 @@ class code():
                 self.vector_points = np.array([[]], dtype=np.float32)                        # variável que contem os pontos n frames antes, para fazer os vetores
                 self.t = 0
                 self.vector_distance_2points = self.array_distance_first_frame
+                self.vector_distance_perpendicular_2points = self.array_distance_perpendicular_first_frame
                 self.flag_hist = 0                                                          #já acabou o ciclo não desenha mais histograma
 
             else:
@@ -126,7 +132,7 @@ class code():
             if self.point_selected is True:                                                  # Uma vez que um ponto é selecionado faz o Tracking
                 if self.old_points.size != 0:
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
-                    if self.t == self.framesPerVector:                                                              # reset de arrays pevery 10 frames
+                    if self.t == self.framesPerVector:                                                              # reset de arrays p every 10 frames
                         self.vector_points = self.old_points
                         self.t = 0                                                                # reset da variavel
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
@@ -145,10 +151,20 @@ class code():
                 self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
                                               self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
                 self.vector_distance_2points = self.trackDistancePoints()
-                self.distanciaCM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
-                self.distanciaCM = round(self.distanciaCM, 4)
+                self.distanciaMM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
+                self.distanciaMM = round((self.distanciaMM)*10, 3)
 
-                image = cv2.putText(self.frame, str(self.distanciaCM)+ " cm", self.org, self.font, self.fontScale, self.color, self.thickness, cv2.LINE_AA)
+                image = cv2.putText(self.frame, str(self.distanciaMM)+ " mm", self.org, self.font, self.fontScale, self.color, self.thickness, cv2.LINE_AA)
+
+            if len(self.vector_distance_perpendicular_2points) == 2:
+                self.distanciaIntroduzidaPerpendicular = self.hipote(self.vector_distance_perpendicular_2points[0][0], self.vector_distance_perpendicular_2points[0][1],
+                                              self.vector_distance_perpendicular_2points[1][0], self.vector_distance_perpendicular_2points[1][1])
+                self.vector_distance_perpendicular_2points = self.trackDistancePointsPerpendicular()
+                self.distanciaMMPerpendicular = self.distanciaIntroduzidaPerpendicular / self.conversao  # imprime frame a frame a distancia
+                self.distanciaMMPerpendicular = round((self.distanciaMMPerpendicular)*10, 3)
+
+                image2 = cv2.putText(self.frame, str(self.distanciaMMPerpendicular) + " mm", self.org, self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
+
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
                 # out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
@@ -173,8 +189,8 @@ class code():
         ax = plt.subplot(2, 1, 1)
         # Add title and axis names
         ax.set_title('Movement histogram')
-        ax.set_ylabel('Moved distance(cm)')
-        histograma = ax.bar(y_pos + 0.1, array1, width=0.4, color='steelblue', align='center', label='Distance(cm)')
+        ax.set_ylabel('Moved distance(mm)')
+        histograma = ax.bar(y_pos + 0.1, array1, width=0.4, color='steelblue', align='center', label='Distance(mm)')
         # print("check")
         # print(array2[0])
         # Create names
@@ -241,6 +257,11 @@ class code():
         a_point_distance = np.array([[x, y]], dtype=np.float32)
         self.vector_distance_2points = np.append(a_point_distance, self.vector_distance_2points, axis=0)  # faz append das coordenadas ao array
 
+    def add_point_distance_perpendicular(self, x, y):
+        global vector_distance_perpendicular_2points
+        a_point_distance = np.array([[x, y]], dtype=np.float32)
+        self.vector_distance_perpendicular_2points = np.append(a_point_distance, self.vector_distance_perpendicular_2points, axis=0)  # faz append das coordenadas ao array
+
     def trackDistancePoints(self):
 
         new_points, status, error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
@@ -252,6 +273,16 @@ class code():
 
         return new_points
 
+    def trackDistancePointsPerpendicular(self):
+
+        new_points, status, error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
+                                                                            self.vector_distance_perpendicular_2points, None,
+                                                                            **self.lk_params_dist)  # tracking Luccas Kanade, Optial flow
+
+        for x, y in new_points:
+            cv2.circle(self.frame, (x, y), 2, (255, 0, 255), -1)
+
+        return new_points
 
     # save_video('video.avi', 20, mirror=True)   depois vejo...
 
