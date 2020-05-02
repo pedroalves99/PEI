@@ -80,7 +80,7 @@ class App:
         self.video.point_selected = True
         print("flagDistance")
         print(self.video.flagDistance)
-        if not self.video.flagDistance:
+        if not self.video.flagDistance and not self.video.flagDistancePerpendicular:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 255, 0),
                        -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
 
