@@ -158,7 +158,7 @@ class code():
 
         #self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
 
-        #self.histogram(self.arrayArrows, self.arrayMedidas)
+        #self.histogram(self.arrayMedidas, self.arrayArrows)
 
 
         #plt.show()
@@ -170,19 +170,30 @@ class code():
 
         bars = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         y_pos = np.arange(len(bars))
-        ax = plt.subplot(1, 1, 1)
-
+        ax = plt.subplot(2, 1, 1)
         # Add title and axis names
         ax.set_title('Movement histogram')
-        ax.set_xlabel('Cardinal Points')
-        ax.set_ylabel('Arrows/Moved points')
-        histograma = ax.bar(y_pos - 0.1, array1, width=0.4, color='steelblue', align='center', label = 'Number of arrows') and ax.bar(y_pos + 0.1, array2, width=0.4, color='darkgray', align='center', label = 'Moved distance(px)')
-        #print("check")
-        #print(array2[0])
+        ax.set_ylabel('Moved distance(cm)')
+        histograma = ax.bar(y_pos + 0.1, array1, width=0.4, color='steelblue', align='center', label='Distance(cm)')
+        # print("check")
+        # print(array2[0])
         # Create names
         plt.xticks(y_pos, bars)
         leg = ax.legend();
-        return histograma
+
+        bars1 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+        y_pos1 = np.arange(len(bars))
+        ax1 = plt.subplot(2, 1, 2)
+        ax1.set_xlabel('Cardinal Points')
+        ax1.set_ylabel('Number of vectors')
+        histograma1 = ax1.bar(y_pos1 + 0.1, array2, width=0.4, color='darkgray', align='center',
+                              label='Number of vectors')
+        # print("check")
+        # print(array2[0])
+        # Create names
+        plt.xticks(y_pos1, bars1)
+        leg1 = ax1.legend();
+        return histograma, histograma1
 
     def hipote(self, x1, y1, x2, y2):               # teorema de pitagoras
         return math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))
