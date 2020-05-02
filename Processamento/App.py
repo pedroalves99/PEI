@@ -17,43 +17,44 @@ class App:
         self.window.title("EcoTracker")
         self.screenWidth = self.window.winfo_screenwidth()
         self.screenHeight = self.window.winfo_screenheight()
-        #self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
-        self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+        self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+        #self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+        print(int(self.screenWidth/1000))
 
         # TOP LEFT BUTTONS
-        self.histogramBt = Button(self.window, text="Histogram", width=10, height=2).grid(row=1, column=1, padx=(0, self.screenWidth/10))
+        self.histogramBt = Button(self.window, text="Histogram", width=int(self.screenWidth/190), height=int(self.screenHeight/384)).grid(row=1, column=1, padx=(0, self.screenWidth/4.1))
 
         # VIDEO CANVAS
-        self.videoCanvas = Canvas(self.window, width = self.screenWidth/1.36, height = self.screenHeight/1.15)
+        self.videoCanvas = Canvas(self.window, width = self.screenWidth/1.7, height = self.screenHeight/1.15)
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth/128, pady=(self.screenWidth/192,0))
         self.videoCanvas.configure(bg='grey')
     
         # PLAY BUTTON
         self.playImage = PhotoImage(file="playbutton.png")  
-        self.playButton = Button(self.window, width=50, height=50, image=self.playImage, command=self.play)
+        self.playButton = Button(self.window, width=int(self.screenWidth/30), height=int(self.screenWidth/30), image=self.playImage, command=self.play)
         self.playButton["border"] = "0"
         self.playButton.grid(row=11, column=3)
 
         # PAUSE BUTTON
         self.pauseImage = PhotoImage(file="pausebutton.png")  
-        self.pauseButton = Button(self.window, width=50, height=50, image=self.pauseImage, command=self.play)
+        self.pauseButton = Button(self.window, width=int(self.screenWidth/30), height=int(self.screenWidth/30), image=self.pauseImage, command=self.play)
         self.pauseButton["border"] = "0"
         self.pauseButton.grid(row=11, column=3)
         self.pauseButton.grid_remove()
 
         # TOP RIGHT BUTTONS
-        self.openBt = Button(self.window, text="Open", width=10, command=self.getFileDir).grid(row=1, column=5, columnspan=2)
-        self.saveAsBt = Button(self.window, text="Save As", width=10, command=self.saveFileDir).grid(row=2, column=5, columnspan=2)
-        self.resetPointsBt = Button(self.window, text="Reset Points", width=10).grid(row=3, column=5, columnspan=2)
-        self.distance1 = Button(self.window, text="Distance1", width=10, command=self.distance).grid(row=4, column=5, columnspan=2)
-        self.distance2 = Button(self.window, text="Distance2", width=10, command=self.distancePerpendicular).grid(row=5, column=5, columnspan=2)
+        self.openBt = Button(self.window, text="Open", width=int(self.screenWidth/100), command=self.getFileDir).grid(row=1, column=5, columnspan=2)
+        self.saveAsBt = Button(self.window, text="Save As", width=int(self.screenWidth/100), command=self.saveFileDir).grid(row=2, column=5, columnspan=2)
+        self.resetPointsBt = Button(self.window, text="Reset Points", width=int(self.screenWidth/100)).grid(row=3, column=5, columnspan=2)
+        self.distance1 = Button(self.window, text="Distance1", width=int(self.screenWidth/100), command=self.distance).grid(row=4, column=5, columnspan=2)
+        self.distance2 = Button(self.window, text="Distance2", width=int(self.screenWidth/100), command=self.distancePerpendicular).grid(row=5, column=5, columnspan=2)
 
         # BOTTOM RIGHT BUTTONS
-        self.preferencesBt = Button(self.window, text="Preferences", width=10, command=self.optionsWindow).grid(row=7, column=5, pady=(self.screenWidth/6.4,self.screenHeight/192))
+        self.preferencesBt = Button(self.window, text="Preferences", width=int(self.screenWidth/100), command=self.optionsWindow).grid(row=7, column=5, pady=(self.screenWidth/6.4,self.screenHeight/192))
         self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=8, column=5, pady=0)
-        self.oneBt = Button(self.window, text="1x", width=1).grid(row=9, column=5, sticky=E)
-        self.seventyFiveBt = Button(self.window, text="0.75x", width=1).grid(row=9, column=5)
-        self.halfBt = Button(self.window, text="0.5x", width=1).grid(row=9, column=5, sticky=W)
+        self.oneBt = Button(self.window, text="1x", width=int(self.screenWidth/1000)).grid(row=9, column=5, sticky=E)
+        self.seventyFiveBt = Button(self.window, text="0.75x", width=int(self.screenWidth/1000)).grid(row=9, column=5)
+        self.halfBt = Button(self.window, text="0.5x", width=int(self.screenWidth/1000)).grid(row=9, column=5, sticky=W)
         self.filename = None
 
         self.delay = 15
