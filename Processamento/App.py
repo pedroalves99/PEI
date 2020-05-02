@@ -21,11 +21,10 @@ class App:
         #self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
 
         # TOP LEFT BUTTONS
-        self.histogramBt = Button(self.window, text="Histogram", width=10, height=2).grid(row=1, column=1)
-        self.compassRoseBt = Button(self.window, text="Compass Rose", width=10, height=2).grid(row=1, column=2)
+        self.histogramBt = Button(self.window, text="Histogram", width=10, height=2).grid(row=1, column=1, padx=(0, self.screenWidth/10))
 
         # VIDEO CANVAS
-        self.videoCanvas = Canvas(self.window, width = self.screenWidth/1.35, height = self.screenHeight/1.15)
+        self.videoCanvas = Canvas(self.window, width = self.screenWidth/1.36, height = self.screenHeight/1.15)
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth/128, pady=(self.screenWidth/192,0))
         self.videoCanvas.configure(bg='grey')
     
