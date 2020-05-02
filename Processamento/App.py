@@ -59,6 +59,8 @@ class App:
         self.openBt = Button(self.window, text="Open", width=10, command=self.getFileDir).grid(row=1, column=5, columnspan=2)
         self.saveAsBt = Button(self.window, text="Save As", width=10, command=self.saveFileDir).grid(row=2, column=5, columnspan=2)
         self.resetPointsBt = Button(self.window, text="Reset Points", width=10).grid(row=3, column=5, columnspan=2)
+        self.distance1 = Button(self.window, text="Distance1", width=10, command=self.distance).grid(row=4, column=5, columnspan=2)
+        self.distance2 = Button(self.window, text="Distance2", width=10, command=self.distancePerpendicular).grid(row=5, column=5, columnspan=2)
 
         # BOTTOM RIGHT BUTTONS
         self.preferencesBt = Button(self.window, text="Preferences", width=10, command=self.optionsWindow).grid(row=7, column=5, pady=(300,10))
@@ -135,10 +137,16 @@ class App:
         filename = fd.asksaveasfilename()
         mb.showinfo(title="Done!", message="Saved successfully!")
         # save com o code.py
+
+    def distance(self):
+        self.video.flagDistance = True
+        print("flag distance")
+        print(self.video.flagDistance)
+
+    def distancePerpendicular(self):
         self.video.flagDistancePerpendicular = True
         print("flag distance perpendicular")
         print(self.video.flagDistancePerpendicular)
-
 
     def optionsWindow(self):
         optionsWindow = Toplevel()

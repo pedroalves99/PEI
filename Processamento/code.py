@@ -66,6 +66,7 @@ class code():
         self.conversao = None
         self.font = cv2.FONT_HERSHEY_COMPLEX_SMALL
         self.org = (int(self.width-150), int(self.height-30))
+        self.org2 = (int(self.width - 300), int(self.height - 30))
         self.fontScale = 1
         self.color = (0, 0, 255)
         self.color2 = (255, 0, 255)
@@ -163,7 +164,7 @@ class code():
                 self.distanciaMMPerpendicular = self.distanciaIntroduzidaPerpendicular / self.conversao  # imprime frame a frame a distancia
                 self.distanciaMMPerpendicular = round((self.distanciaMMPerpendicular)*10, 3)
 
-                image2 = cv2.putText(self.frame, str(self.distanciaMMPerpendicular) + " mm", self.org, self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
+                image2 = cv2.putText(self.frame, str(self.distanciaMMPerpendicular) + " mm", self.org2, self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
 
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
