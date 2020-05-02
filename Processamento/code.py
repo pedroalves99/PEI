@@ -15,7 +15,7 @@ class code():
     def __init__(self, video_path, framesPerVector= 3, minDist= 2):
         self.video_path = video_path
         # Lukas Kanade params
-        self.lk_params_dist = dict(winSize = (10, 10),      # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
+        self.lk_params_dist = dict(winSize = (30, 30),      # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
                          maxLevel = 4,
                          criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
         self.lk_params = dict(winSize = (30, 30),
@@ -65,11 +65,13 @@ class code():
         self.spline= np.zeros_like(self.frame)
         self.conversao = None
         self.font = cv2.FONT_HERSHEY_COMPLEX_SMALL
-        self.org = (int(self.width-150), int(self.height-30))
-        self.org2 = (int(self.width - 300), int(self.height - 30))
+        self.org = (int(self.width-560), int(self.height-45))
+        self.org2 = (int(self.width - 560), int(self.height - 20))
+        self.org3 = (int(self.width - 260), int(self.height - 30))
         self.fontScale = 1
         self.color = (0, 0, 255)
         self.color2 = (255, 0, 255)
+        self.color3 = (255, 255, 255)
         self.key = None
         self.thickness = 2
         self.array_distance_first_frame = np.array([[]], dtype=np.float32)
@@ -155,7 +157,7 @@ class code():
                 self.distanciaMM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
                 self.distanciaMM = round((self.distanciaMM)*10, 3)
 
-                image = cv2.putText(self.frame, str(self.distanciaMM)+ " mm", self.org, self.font, self.fontScale, self.color, self.thickness, cv2.LINE_AA)
+                image = cv2.putText(self.frame, "d1 = " +str(self.distanciaMM)+ " mm", self.org, self.font, self.fontScale, self.color, self.thickness, cv2.LINE_AA)
 
             if len(self.vector_distance_perpendicular_2points) == 2:
                 self.distanciaIntroduzidaPerpendicular = self.hipote(self.vector_distance_perpendicular_2points[0][0], self.vector_distance_perpendicular_2points[0][1],
@@ -164,7 +166,11 @@ class code():
                 self.distanciaMMPerpendicular = self.distanciaIntroduzidaPerpendicular / self.conversao  # imprime frame a frame a distancia
                 self.distanciaMMPerpendicular = round((self.distanciaMMPerpendicular)*10, 3)
 
-                image2 = cv2.putText(self.frame, str(self.distanciaMMPerpendicular) + " mm", self.org2, self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
+                image2 = cv2.putText(self.frame, "d2 = " + str(self.distanciaMMPerpendicular) + " mm", self.org2, self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
+
+            self.area = self.contourArea(self.new_points)
+            self.area = round((self.area / self.conversao), 3)
+            imageArea = cv2.putText(self.frame, "area = " + str(self.area) + " mm", self.org3, self.font, self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
 
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
@@ -328,6 +334,20 @@ class code():
         contour = cv2.drawContours(frame_spline, [poly], 0, (0, 255, 0), 1)                          # desenho do contorno na "frame "contour
 
         return contour
+
+    def contourArea(self, points):
+        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
+                           [len(points)] * 2))  # centro cartesiano dos pontos
+
+        sortedp = sorted(points,  # ordenar array em  orientação horária
+                         key=lambda coord: (-135 - math.degrees(
+                             math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
+
+        poly = cv2.approxPolyDP(np.array([sortedp], dtype=np.int32), 1, True)  # aproximação curvilinea do contorno
+        area = cv2.contourArea(poly)
+        print("Area")
+        print(area)
+        return area
 
     def draw_vectors_and_set_histogram(self, points_to_track, f1):
         global frame, vector_points, arrayArrows

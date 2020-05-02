@@ -17,8 +17,8 @@ class App:
         self.window.title("EcoTracker")
         self.screenWidth = self.window.winfo_screenwidth()
         self.screenHeight = self.window.winfo_screenheight()
-        self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
-        #self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+        #self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
+        self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
 
         # TOP LEFT BUTTONS
         self.histogramBt = Button(self.window, text="Histogram", width=10, height=2).grid(row=1, column=1, padx=(0, self.screenWidth/10))
