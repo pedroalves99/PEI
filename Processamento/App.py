@@ -80,6 +80,9 @@ class App:
 
     def delAll(self):
         self.video = code(self.filename, framesPerVector, minDist)
+        self.pauseButton.grid_remove()
+        self.playButton.grid()
+        self.video.pause = True
 
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
 
