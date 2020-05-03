@@ -12,15 +12,16 @@ minDist = 4
 
 
 class App:
-
     def __init__(self):
+
         self.window = Tk()
         self.window.title("EcoTracker")
         self.screenWidth = self.window.winfo_screenwidth()
         self.screenHeight = self.window.winfo_screenheight()
-        # self.window.attributes("-zoomed", True)         # UNCOMMENT FOR LINUX
-        self.window.wm_state("zoomed")  # UNCOMMENT FOR WINDOWS
-        # print(int(self.screenWidth/1000))
+
+        #self.window.attributes("-zoomed", True)  # UNCOMMENT FOR LINUX
+        self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
+        print(int(self.screenWidth / 1000))
 
         # TOP LEFT BUTTONS
         self.histogramBt = Button(self.window, text="Histogram", width=int(self.screenWidth / 190),
@@ -31,24 +32,26 @@ class App:
         self.videoCanvas = Canvas(self.window, width=self.screenWidth / 1.7, height=self.screenHeight / 1.15)
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth / 128,
                               pady=(self.screenWidth / 192, 0))
+
         self.videoCanvas.configure(bg='grey')
 
         # PLAY BUTTON
-        self.playImage = PhotoImage(file="playbutton.png")
-        self.playButton = Button(self.window, width=int(self.screenWidth / 30), height=int(self.screenWidth / 30),
-                                 image=self.playImage, command=self.play)
+
+        self.playImage = PhotoImage(file="playbutton.png")  
+        self.playButton = Button(self.window, width=int(self.screenWidth/30), height=int(self.screenWidth/30), image=self.playImage, command=self.play)
         self.playButton["border"] = "0"
         self.playButton.grid(row=11, column=3)
 
         # PAUSE BUTTON
-        self.pauseImage = PhotoImage(file="pausebutton.png")
-        self.pauseButton = Button(self.window, width=int(self.screenWidth / 30), height=int(self.screenWidth / 30),
-                                  image=self.pauseImage, command=self.play)
+
+        self.pauseImage = PhotoImage(file="pausebutton.png")  
+        self.pauseButton = Button(self.window, width=int(self.screenWidth/30), height=int(self.screenWidth/30), image=self.pauseImage, command=self.play)
         self.pauseButton["border"] = "0"
         self.pauseButton.grid(row=11, column=3)
         self.pauseButton.grid_remove()
 
         # TOP RIGHT BUTTONS
+
         self.openBt = Button(self.window, text="Open", width=int(self.screenWidth / 100), command=self.getFileDir).grid(
             row=1, column=5, columnspan=2)
         self.saveAsBt = Button(self.window, text="Save As", width=int(self.screenWidth / 100),
@@ -67,6 +70,7 @@ class App:
         self.oneBt = Button(self.window, text="1x", width=int(self.screenWidth / 1000)).grid(row=9, column=5, sticky=E)
         self.seventyFiveBt = Button(self.window, text="0.75x", width=int(self.screenWidth / 1000)).grid(row=9, column=5)
         self.halfBt = Button(self.window, text="0.5x", width=int(self.screenWidth / 1000)).grid(row=9, column=5,sticky=W)
+
         self.filename = None
 
 
