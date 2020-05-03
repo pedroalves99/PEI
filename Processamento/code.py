@@ -13,6 +13,7 @@ import sys
 # adicionar aqui as funções
 class code():
     def __init__(self, video_path, framesPerVector= 3, minDist= 2):
+        self.scale_percent = 160  # percentagem de aumento do video - default 100%
         self.video_path = video_path
         # Lukas Kanade params
         self.lk_params_dist = dict(winSize = (30, 30),      # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
@@ -25,6 +26,7 @@ class code():
         print(self.video_path)
         print((self.cap).isOpened())
         _, self.frame = self.cap.read()                                                          # no video lê a primeira frame
+        self.frame = self.resize(self.frame)
         self.old_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
         # definir/iniciar variáveis aqui
         self.vectors_factor = 3 #fator de visualização dos arrays
@@ -48,7 +50,9 @@ class code():
         self.flag1 = 1
         self.flag2 = 1
         self.width = (self.cap).get(cv2.CAP_PROP_FRAME_WIDTH)                                        # width do frame
+        self.width = int(self.width * self.scale_percent / 100)
         self.height = (self.cap).get(cv2.CAP_PROP_FRAME_HEIGHT)                                      # height do frame
+        self.height = int(self.height * self.scale_percent / 100)
         self.fps = 30.0
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')                                         # define saida
         self.filename = 'video.avi'
@@ -90,7 +94,7 @@ class code():
 
             #cv2.imshow('Frame', self.frame)
 
-            if len(self.vector_distance_2points) == 2:
+            if len(self.vector_distance_2points) == 2: # tem que estar no select_point
                 self.flagDistance = False
                 self.array_distance_first_frame = self.vector_distance_2points
 
@@ -99,10 +103,12 @@ class code():
                 self.array_distance_perpendicular_first_frame = self.vector_distance_perpendicular_2points
 
         else:
-            if self.key == 's':
-                self.pause = 1
+
             check, self.frame = self.cap.read()                                                   # le frame a frame
             self.t += 1
+
+            if check:
+                self.frame = self.resize(self.frame)
 
             if not check:                                                               # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
                 print(self.counts)
@@ -118,7 +124,9 @@ class code():
                     exit()
                 _, self.frame = cap1.read()                                                # le o frame anterior
                 self.old_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
+                self.old_frame = self.resize(self.old_frame)
                 _, self.frame1 = cap1.read()                                                 # le o frame atual
+                self.frame1 = self.resize(self.frame1)
                 self.gray_frame = cv2.cvtColor(self.frame1, cv2.COLOR_BGR2GRAY)                   # converte a frame para gray
                 self.cap = cap1                                                              # atualiza as variaveis
                 self.frame = self.frame1
@@ -150,27 +158,27 @@ class code():
 
                     self.spline = np.zeros_like(self.spline)                                        # reset
 
-            if len(self.vector_distance_2points) == 2:
-                self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
-                                              self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
-                self.vector_distance_2points = self.trackDistancePoints()
-                self.distanciaMM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
-                self.distanciaMM = round((self.distanciaMM)*10, 3)
+                if len(self.vector_distance_2points) == 2:
+                    self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
+                                                  self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
+                    self.vector_distance_2points = self.trackDistancePoints()
+                    self.distanciaMM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
+                    self.distanciaMM = round((self.distanciaMM)*10, 3)
+                    self.flagDistance = False
+                    image = cv2.putText(self.frame, "d1 = " +str(self.distanciaMM)+ " mm", self.org, self.font, self.fontScale, self.color, self.thickness, cv2.LINE_AA)
 
-                image = cv2.putText(self.frame, "d1 = " +str(self.distanciaMM)+ " mm", self.org, self.font, self.fontScale, self.color, self.thickness, cv2.LINE_AA)
-
-            if len(self.vector_distance_perpendicular_2points) == 2:
-                self.distanciaIntroduzidaPerpendicular = self.hipote(self.vector_distance_perpendicular_2points[0][0], self.vector_distance_perpendicular_2points[0][1],
-                                              self.vector_distance_perpendicular_2points[1][0], self.vector_distance_perpendicular_2points[1][1])
-                self.vector_distance_perpendicular_2points = self.trackDistancePointsPerpendicular()
-                self.distanciaMMPerpendicular = self.distanciaIntroduzidaPerpendicular / self.conversao  # imprime frame a frame a distancia
-                self.distanciaMMPerpendicular = round((self.distanciaMMPerpendicular)*10, 3)
-
-                image2 = cv2.putText(self.frame, "d2 = " + str(self.distanciaMMPerpendicular) + " mm", self.org2, self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
-
-            self.area = self.contourArea(self.new_points)
-            self.area = round((self.area / self.conversao), 3)
-            imageArea = cv2.putText(self.frame, "area = " + str(self.area) + " mm", self.org3, self.font, self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
+                if len(self.vector_distance_perpendicular_2points) == 2:
+                    self.distanciaIntroduzidaPerpendicular = self.hipote(self.vector_distance_perpendicular_2points[0][0], self.vector_distance_perpendicular_2points[0][1],
+                                                  self.vector_distance_perpendicular_2points[1][0], self.vector_distance_perpendicular_2points[1][1])
+                    self.vector_distance_perpendicular_2points = self.trackDistancePointsPerpendicular()
+                    self.distanciaMMPerpendicular = self.distanciaIntroduzidaPerpendicular / self.conversao  # imprime frame a frame a distancia
+                    self.distanciaMMPerpendicular = round((self.distanciaMMPerpendicular)*10, 3)
+                    self.flagDistancePerpendicular = False
+                    image2 = cv2.putText(self.frame, "d2 = " + str(self.distanciaMMPerpendicular) + " mm", self.org2, self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
+                if self.new_points.size != 0:
+                    self.area = self.contourArea(self.new_points)
+                    self.area = round((self.area / self.conversao), 3)
+                    imageArea = cv2.putText(self.frame, "area = " + str(self.area) + " mm", self.org3, self.font, self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
 
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
@@ -188,6 +196,14 @@ class code():
     def __del__(self):
         self.cap.release()
         cv2.destroyAllWindows()
+
+    def resize(self, frame):
+        width = int(frame.shape[1] * self.scale_percent / 100)
+        height = int(frame.shape[0] * self.scale_percent / 100)
+        dim = (width, height)
+        frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+
+        return frame
 
     def histogram(self, array1, array2):
 
@@ -345,8 +361,8 @@ class code():
 
         poly = cv2.approxPolyDP(np.array([sortedp], dtype=np.int32), 1, True)  # aproximação curvilinea do contorno
         area = cv2.contourArea(poly)
-        print("Area")
-        print(area)
+        #print("Area")
+        #print(area)
         return area
 
     def draw_vectors_and_set_histogram(self, points_to_track, f1):
