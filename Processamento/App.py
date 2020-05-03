@@ -38,14 +38,12 @@ class App:
 
 
         # PLAY BUTTON
-
         self.playImage = PhotoImage(file="playbutton.png")  
         self.playButton = Button(self.window, width=int(self.screenWidth/30), height=int(self.screenWidth/30), image=self.playImage, command=self.play)
         self.playButton["border"] = "0"
         self.playButton.grid(row=11, column=3)
 
         # PAUSE BUTTON
-
         self.pauseImage = PhotoImage(file="pausebutton.png")  
         self.pauseButton = Button(self.window, width=int(self.screenWidth/29), height=int(self.screenWidth/29), image=self.pauseImage, command=self.play)
         self.pauseButton["border"] = "0"
@@ -53,15 +51,14 @@ class App:
         self.pauseButton.grid_remove()
 
         # TOP RIGHT BUTTONS
-
         self.openBt = Button(self.window, text="Open", width=int(self.screenWidth / 100), command=self.getFileDir).grid(
             row=1, column=5, columnspan=2)
         self.saveAsBt = Button(self.window, text="Save As", width=int(self.screenWidth / 100),
                                command=self.saveFileDir).grid(row=2, column=5, columnspan=2)
-        self.resetPointsBt = Button(self.window, text="Reset Points", width=int(self.screenWidth / 100)).grid(row=3,column=5, columnspan=2)
-        self.distance1 = Button(self.window, text="Distance1", width=int(self.screenWidth / 100),
+        self.resetPointsBt = Button(self.window, text="Reset All", width=int(self.screenWidth / 100), command=self.delAll).grid(row=3,column=5, columnspan=2)
+        self.distance1 = Button(self.window, text="Distance 1", width=int(self.screenWidth / 100),
                                 command=self.distance).grid(row=4, column=5, columnspan=2)
-        self.distance2 = Button(self.window, text="Distance2", width=int(self.screenWidth / 100),
+        self.distance2 = Button(self.window, text="Distance 2", width=int(self.screenWidth / 100),
                                 command=self.distancePerpendicular).grid(row=5, column=5, columnspan=2)
 
         # BOTTOM RIGHT BUTTONS
@@ -80,6 +77,9 @@ class App:
         self.update()
 
         self.window.mainloop()
+
+    def delAll(self):
+        self.video = code(self.filename, framesPerVector, minDist)
 
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
 

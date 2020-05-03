@@ -31,10 +31,8 @@ class code():
         # definir/iniciar variáveis aqui
         self.vectors_factor = 3 #fator de visualização dos arrays
         self.q = 0
-        ### CASAS ###
         self.dif = int(minDist)
         self.framesPerVector = int(framesPerVector)
-        ###### SE NÃO DEREM ARGS ELE ASSUME AQUELES VALORES DEPOIS DO = LÁ EM CIMA
         self.tmp = []
         self.tmp1 = []
         self.tmp2 = []
