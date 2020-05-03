@@ -66,9 +66,9 @@ class App:
                                     command=self.optionsWindow).grid(row=7, column=5, pady=(
         self.screenWidth / 6.4, self.screenHeight / 192))
         self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=8, column=5,pady=0)
-        self.oneBt = Button(self.window, text="1x", width=int(self.screenWidth / 1000)).grid(row=9, column=5, sticky=E)
-        self.seventyFiveBt = Button(self.window, text="0.75x", width=int(self.screenWidth / 1000)).grid(row=9, column=5)
-        self.halfBt = Button(self.window, text="0.5x", width=int(self.screenWidth / 1000)).grid(row=9, column=5,sticky=W)
+        self.oneBt = Button(self.window, text="1x", width=int(self.screenWidth / 1000), command = self.getSpeed1x).grid(row=9, column=5, sticky=E)
+        self.seventyFiveBt = Button(self.window, text="0.75x", width=int(self.screenWidth / 1000), command = self.getSpeed075x).grid(row=9, column=5)
+        self.halfBt = Button(self.window, text="0.5x", width=int(self.screenWidth / 1000), command = self.getSpeed05x).grid(row=9, column=5,sticky=W)
 
         self.filename = None
 
@@ -145,7 +145,14 @@ class App:
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth / 128,pady=(self.screenWidth / 192, 0))
         self.videoCanvas.configure(bg='grey')
 
+    def getSpeed1x(self):
+        self.delay = 15
 
+    def getSpeed075x(self):
+        self.delay = 23
+
+    def getSpeed05x(self):
+        self.delay = 30
 
     def getHistogram(self):
         code.showHistogram(self.video)

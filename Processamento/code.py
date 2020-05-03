@@ -13,7 +13,7 @@ import sys
 # adicionar aqui as funções
 class code():
     def __init__(self, video_path, framesPerVector= 3, minDist= 2):
-        self.scale_percent = 125  # percentagem de aumento do video - default 100%
+        self.scale_percent = 115  # percentagem de aumento do video - default 100%
         self.video_path = video_path
         # Lukas Kanade params
         self.lk_params_dist = dict(winSize = (30, 30),      # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
@@ -176,7 +176,8 @@ class code():
                 if self.new_points.size != 0:
                     self.area = self.contourArea(self.new_points)
                     self.area = round((self.area / self.conversao), 3)
-                    imageArea = cv2.putText(self.frame, "area = " + str(self.area) + " mm", self.org3, self.font, self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
+
+                    imageArea = cv2.putText(self.frame, "area = " + str(self.area) + "mm²", self.org3, self.font, self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
 
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
