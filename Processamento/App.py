@@ -5,6 +5,7 @@ import PIL.Image, PIL.ImageTk
 from code import code
 import cv2
 import numpy as np
+from sys import platform
 
 # Default Values
 framesPerVector = 6
@@ -18,10 +19,11 @@ class App:
         self.window.title("EcoTracker")
         self.screenWidth = self.window.winfo_screenwidth()
         self.screenHeight = self.window.winfo_screenheight()
+        if platform == "win32":
+            self.window.wm_state("zoomed")
+        else:
+            self.window.attributes("-zoomed", True)
 
-        #self.window.attributes("-zoomed", True)  # UNCOMMENT FOR LINUX
-        self.window.wm_state("zoomed")                 # UNCOMMENT FOR WINDOWS
-        print(int(self.screenWidth / 1000))
 
         # TOP LEFT BUTTONS
         self.histogramBt = Button(self.window, text="Histogram", width=int(self.screenWidth / 190),
@@ -29,7 +31,7 @@ class App:
                                                                             padx=(0, self.screenWidth / 4.1))
 
         # VIDEO CANVAS
-        self.videoCanvas = Canvas(self.window, width=self.screenWidth / 1.7, height=self.screenHeight / 1.15)
+        self.videoCanvas = Canvas(self.window, width=self.screenWidth / 1.7, height=self.screenHeight / 1.3)
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth / 128,
                               pady=(self.screenWidth / 192, 0))
 
@@ -45,7 +47,7 @@ class App:
         # PAUSE BUTTON
 
         self.pauseImage = PhotoImage(file="pausebutton.png")  
-        self.pauseButton = Button(self.window, width=int(self.screenWidth/30), height=int(self.screenWidth/30), image=self.pauseImage, command=self.play)
+        self.pauseButton = Button(self.window, width=int(self.screenWidth/29), height=int(self.screenWidth/29), image=self.pauseImage, command=self.play)
         self.pauseButton["border"] = "0"
         self.pauseButton.grid(row=11, column=3)
         self.pauseButton.grid_remove()

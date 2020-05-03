@@ -13,7 +13,7 @@ import sys
 # adicionar aqui as funções
 class code():
     def __init__(self, video_path, framesPerVector= 3, minDist= 2):
-        self.scale_percent = 160  # percentagem de aumento do video - default 100%
+        self.scale_percent = 125  # percentagem de aumento do video - default 100%
         self.video_path = video_path
         # Lukas Kanade params
         self.lk_params_dist = dict(winSize = (30, 30),      # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
