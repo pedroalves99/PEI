@@ -27,8 +27,7 @@ class App:
 
         # TOP LEFT BUTTONS
         self.histogramBt = Button(self.window, text="Histogram", width=int(self.screenWidth / 190),
-                                  height=int(self.screenHeight / 384)).grid(row=1, column=1,
-                                                                            padx=(0, self.screenWidth / 4.1))
+                                  height=int(self.screenHeight / 384), command = self.getHistogram).grid(row=1, column=1,padx=(0, self.screenWidth / 4.1))
 
         # VIDEO CANVAS
         self.videoCanvas = Canvas(self.window, width=self.screenWidth / 1.7, height=self.screenHeight / 1.3)
@@ -36,6 +35,7 @@ class App:
                               pady=(self.screenWidth / 192, 0))
 
         self.videoCanvas.configure(bg='grey')
+
 
         # PLAY BUTTON
 
@@ -142,6 +142,10 @@ class App:
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth / 128,pady=(self.screenWidth / 192, 0))
         self.videoCanvas.configure(bg='grey')
 
+
+
+    def getHistogram(self):
+        code.showHistogram(self.video)
 
 
     def saveFileDir(self):

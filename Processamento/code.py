@@ -191,8 +191,13 @@ class code():
 
         #self.histogram(self.arrayMedidas, self.arrayArrows)
 
+        # plt.show()
+    def showHistogram(self):
+        self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
+        self.histogram(self.arrayMedidas, self.arrayArrows)
+        plt.show()
 
-        #plt.show()
+
     def __del__(self):
         self.cap.release()
         cv2.destroyAllWindows()
