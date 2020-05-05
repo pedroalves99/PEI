@@ -60,7 +60,7 @@ class App:
                                 command=self.distance).grid(row=4, column=5, columnspan=2)
         self.distance2 = Button(self.window, text="Distance 2", width=int(self.screenWidth / 100),
                                 command=self.distancePerpendicular).grid(row=5, column=5, columnspan=2)
-
+        self.secContour = Button(self.window, text="Reference Contour", width=int(self.screenWidth / 100), command=self.ref).grid(row=6, column=5, columnspan=2)
         # BOTTOM RIGHT BUTTONS
         self.preferencesBt = Button(self.window, text="Preferences", width=int(self.screenWidth / 100),
                                     command=self.optionsWindow).grid(row=7, column=5, pady=(
@@ -84,12 +84,13 @@ class App:
         self.playButton.grid()
         self.video.pause = True
 
+
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
 
         self.video.point_selected = True
         print("flagDistance")
         print(self.video.flagDistance)
-        if not self.video.flagDistance and not self.video.flagDistancePerpendicular:
+        if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 255, 0),
                        -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
 
@@ -121,6 +122,16 @@ class App:
                 self.video.flag2 += 1
             else:
                 self.video.add_point_distance_perpendicular(event.x, event.y)
+        if self.video.flagRef:
+            cv2.circle(self.video.frame, (event.x, event.y), 2,(255,255,0),-1)
+            if self.video.flagRef == 1:
+                self.video.ref_points=np.array([[event.x, event.y]],
+                                                 dtype=np.float32)
+                self.video.flagRef += 1
+            else:
+                self.video.addRef_point(event.x, event.y)
+
+
 
     def update(self):  # função que serve de loop, chamada consoante o valor do self.delay em ms
 
@@ -173,6 +184,13 @@ class App:
         self.video.flagDistancePerpendicular = True
         print("flag distance perpendicular")
         print(self.video.flagDistancePerpendicular)
+
+    def ref(self):
+        if self.video.flagRef:
+            self.video.flagRef = False
+        else:
+            self.video.flagRef = True
+
 
     def optionsWindow(self):
         optionsWindow = Toplevel()

@@ -47,6 +47,7 @@ class code():
         self.flag = 1
         self.flag1 = 1
         self.flag2 = 1
+        self.flagRef = 1
         self.width = (self.cap).get(cv2.CAP_PROP_FRAME_WIDTH)                                        # width do frame
         self.width = int(self.width * self.scale_percent / 100)
         self.height = (self.cap).get(cv2.CAP_PROP_FRAME_HEIGHT)                                      # height do frame
@@ -62,9 +63,13 @@ class code():
         self.old_points = np.array([[]], dtype=np.float32)
         self.new_points = np.array([[]], dtype=np.float32)
         self.origin_points = np.array([[]], dtype=np.float32)
+        self.ref_points = np.array([[]], dtype=np.float32)
+        self.newref_points = np.array([[]], dtype=np.float32)
         self.flagDistance = False
         self.flagDistancePerpendicular = False
+        self.flagRef = False
         self.spline= np.zeros_like(self.frame)
+        self.Refspline=np.zeros_like(self.frame)
         self.conversao = None
         self.font = cv2.FONT_HERSHEY_COMPLEX_SMALL
         self.org = (int(self.width-560), int(self.height-45))
@@ -78,6 +83,7 @@ class code():
         self.thickness = 2
         self.array_distance_first_frame = np.array([[]], dtype=np.float32)
         self.array_distance_perpendicular_first_frame = np.array([[]], dtype=np.float32)
+        self.ref_points_firsts_frame = np.array([[]], dtype=np.float32)
         self.flag_hist = 1
         self.pause = True
 
@@ -99,7 +105,8 @@ class code():
             if len(self.vector_distance_perpendicular_2points) == 2:
                 self.flagDistancePerpendicular = False
                 self.array_distance_perpendicular_first_frame = self.vector_distance_perpendicular_2points
-
+            if self.ref_points.size != 0:
+                self.ref_points_firsts_frame = self.ref_points
         else:
 
             check, self.frame = self.cap.read()                                                   # le frame a frame
@@ -129,11 +136,13 @@ class code():
                 self.cap = cap1                                                              # atualiza as variaveis
                 self.frame = self.frame1
                 self.old_points = self.origin_points
+                self.ref_points
                 self.q = 0
                 self.vector_points = np.array([[]], dtype=np.float32)                        # variável que contem os pontos n frames antes, para fazer os vetores
                 self.t = 0
                 self.vector_distance_2points = self.array_distance_first_frame
                 self.vector_distance_perpendicular_2points = self.array_distance_perpendicular_first_frame
+                self.ref_points= self.ref_points_firsts_frame
                 self.flag_hist = 0                                                          #já acabou o ciclo não desenha mais histograma
 
             else:
@@ -141,21 +150,33 @@ class code():
             if self.point_selected is True:                                                  # Uma vez que um ponto é selecionado faz o Tracking
                 if self.old_points.size != 0:
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
+                    if self.ref_points.size != 0:
+                        self.newref_points, self.refstatus, self.referror = cv2.calcOpticalFlowPyrLK(self.old_frame,
+                                                                                            self.gray_frame,
+                                                                                            self.ref_points, None,
+                                                                                            **self.lk_params)
                     if self.t == self.framesPerVector:                                                              # reset de arrays p every 10 frames
                         self.vector_points = self.old_points
                         self.t = 0                                                                # reset da variavel
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
                     self.old_points = self.new_points                                                 # os new points são as coordenadas dos pontos apos a movimentação
-                    self.spline = self.draw_spline(self.spline, self.new_points)                              #draw spline with the new points
-                    self.frame = cv2.add(self.frame, self.spline)                                         # fazer o overlay do contour na main frame
+                    self.ref_points = self.newref_points
+                    self.spline = self.draw_spline(self.spline, self.new_points)
+                    #draw spline with the new points
+                    self.Refspline = self.draw_Refspline(self.Refspline, self.newref_points)
+                    self.all = cv2.add(self.spline, self.Refspline)
+                    self.frame = cv2.add(self.frame, self.all)                                         # fazer o overlay do contour na main frame
+                   # self.frame = cv2.add(self.frame, self.Refspline)
                     if self.q == 0:                                                             #só faz o resampling 1 vez
                         self.track_points = self.resample_points(self.spline, self.dif)
+                        self.refTrack_points = self.resample_points(self.Refspline, self.dif)
                         self.old_points = self.track_points
+                        self.ref_points = self.refTrack_points
                         self.vector_points = self.track_points
                         self.q = 1
 
                     self.spline = np.zeros_like(self.spline)                                        # reset
-
+                    self.Refspline = np.zeros_like(self.Refspline)
                 if len(self.vector_distance_2points) == 2:
                     self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
                                                   self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
@@ -279,6 +300,12 @@ class code():
         self.old_points = np.append(a_point, self.old_points, axis=0)                          #faz append das coordenadas ao array
         self.origin_points = np.append(a_point, self.origin_points, axis=0)
 
+    def addRef_point(self, x, y):                                                             #à medida que são selecionados pontos estes são adicionados ao array
+        global ref_points
+        a_point = np.array([[x, y]], dtype=np.float32)                               #formata as coordenadas x,y(float32)
+        self.ref_points = np.append(a_point, self.ref_points, axis=0)                          #faz append das coordenadas ao array
+
+
     def add_point_distance(self, x, y):
         global vector_distance_2points
         a_point_distance = np.array([[x, y]], dtype=np.float32)
@@ -352,6 +379,20 @@ class code():
         poly = cv2.approxPolyDP(np.array([sortedp], dtype=np.int32), 1, True)                        # aproximação curvilinea do contorno
 
         contour = cv2.drawContours(frame_spline, [poly], 0, (0, 255, 0), 1)                          # desenho do contorno na "frame "contour
+
+        return contour
+
+    def draw_Refspline(self, frame_spline, points):
+        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
+                           [len(points)] * 2))  # centro cartesiano dos pontos
+
+        sortedp = sorted(points,  # ordenar array em  orientação horária
+                         key=lambda coord: (-135 - math.degrees(
+                             math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
+
+        poly = cv2.approxPolyDP(np.array([sortedp], dtype=np.int32), 1, True)  # aproximação curvilinea do contorno
+
+        contour = cv2.drawContours(frame_spline, [poly], 0, (255, 255, 0), 1)  # desenho do contorno na "frame "contour
 
         return contour
 
@@ -485,4 +526,4 @@ class code():
         return track_points
 
 if __name__ == '__main__':
-    code("MENINO01.wmv").execute()
+    code("QUARTA01.wmv").execute()
