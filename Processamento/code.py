@@ -16,10 +16,10 @@ class code():
         self.scale_percent = 115  # percentagem de aumento do video - default 100%
         self.video_path = video_path
         # Lukas Kanade params
-        self.lk_params_dist = dict(winSize = (30, 30),      # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
+        self.lk_params_dist = dict(winSize = (22, 22),      # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
                          maxLevel = 4,
                          criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
-        self.lk_params = dict(winSize = (30, 30),
+        self.lk_params = dict(winSize = (22, 22),
                          maxLevel = 4,
                          criteria = (cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
         self.cap = cv2.VideoCapture(video_path)                                               # começa a captura de video(por o nome do video como argumento, e coloca-lo no mesmo diretorio(para já))
@@ -29,7 +29,7 @@ class code():
         self.frame = self.resize(self.frame)
         self.old_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)                            # passa a primeira frame para grayScale
         # definir/iniciar variáveis aqui
-        self.vectors_factor = 3 #fator de visualização dos arrays
+        self.vectors_factor = 2 #fator de visualização dos arrays
         self.q = 0
         self.dif = int(minDist)
         self.framesPerVector = int(framesPerVector)
@@ -147,36 +147,42 @@ class code():
 
             else:
                 self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
-            if self.point_selected is True:                                                  # Uma vez que um ponto é selecionado faz o Tracking
-                if self.old_points.size != 0:
+            if self.point_selected is True:  # Uma vez que um ponto é selecionado faz o Tracking
+                if self.ref_points.size != 0:       #second contour
+                    self.newref_points, self.refstatus, self.referror = cv2.calcOpticalFlowPyrLK(self.old_frame,
+                                                                                                 self.gray_frame,
+                                                                                                 self.ref_points, None,
+                                                                                                 **self.lk_params)
+
+                    self.ref_points = self.newref_points
+                    #draw spline with the new points
+                    self.Refspline = self.draw_Refspline(self.Refspline, self.newref_points)
+
+                    self.frame = cv2.add(self.frame, self.Refspline)
+                    self.Refspline = np.zeros_like(self.Refspline)
+
+                if self.old_points.size != 0:  # 1st contour
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame, self.old_points, None, **self.lk_params) # tracking Luccas Kanade, Optial flow
-                    if self.ref_points.size != 0:
-                        self.newref_points, self.refstatus, self.referror = cv2.calcOpticalFlowPyrLK(self.old_frame,
-                                                                                            self.gray_frame,
-                                                                                            self.ref_points, None,
-                                                                                            **self.lk_params)
+
                     if self.t == self.framesPerVector:                                                              # reset de arrays p every 10 frames
                         self.vector_points = self.old_points
                         self.t = 0                                                                # reset da variavel
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
                     self.old_points = self.new_points                                                 # os new points são as coordenadas dos pontos apos a movimentação
-                    self.ref_points = self.newref_points
                     self.spline = self.draw_spline(self.spline, self.new_points)
-                    #draw spline with the new points
-                    self.Refspline = self.draw_Refspline(self.Refspline, self.newref_points)
-                    self.all = cv2.add(self.spline, self.Refspline)
-                    self.frame = cv2.add(self.frame, self.all)                                         # fazer o overlay do contour na main frame
+
+                    self.frame = cv2.add(self.frame, self.spline)                                         # fazer o overlay do contour na main frame
                    # self.frame = cv2.add(self.frame, self.Refspline)
                     if self.q == 0:                                                             #só faz o resampling 1 vez
                         self.track_points = self.resample_points(self.spline, self.dif)
-                        self.refTrack_points = self.resample_points(self.Refspline, self.dif)
+                        #self.refTrack_points = self.resample_points(self.Refspline, self.dif)
                         self.old_points = self.track_points
-                        self.ref_points = self.refTrack_points
+                        #self.ref_points = self.refTrack_points
                         self.vector_points = self.track_points
                         self.q = 1
 
                     self.spline = np.zeros_like(self.spline)                                        # reset
-                    self.Refspline = np.zeros_like(self.Refspline)
+
                 if len(self.vector_distance_2points) == 2:
                     self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
                                                   self.vector_distance_2points[1][0], self.vector_distance_2points[1][1])
