@@ -74,11 +74,13 @@ class code():
         self.font = cv2.FONT_HERSHEY_COMPLEX_SMALL
         self.org = (int(self.width-560), int(self.height-45))
         self.org2 = (int(self.width - 560), int(self.height - 20))
-        self.org3 = (int(self.width - 260), int(self.height - 30))
+        self.org3 = (int(self.width - 260), int(self.height - 45))
+        self.org4 = (int(self.width - 260), int(self.height - 20))
         self.fontScale = 1
         self.color = (0, 0, 255)
         self.color2 = (255, 0, 255)
-        self.color3 = (255, 255, 255)
+        self.color3 = (0, 255, 0)
+        self.color4 = (255,255,255)
         self.key = None
         self.thickness = 2
         self.array_distance_first_frame = np.array([[]], dtype=np.float32)
@@ -155,7 +157,7 @@ class code():
                                                                                                  **self.lk_params)
 
                     self.ref_points = self.newref_points
-                    #draw spline with the new points
+                    #draw spline with the new pointscofcof
                     self.Refspline = self.draw_Refspline(self.Refspline, self.newref_points)
 
                     self.frame = cv2.add(self.frame, self.Refspline)
@@ -200,11 +202,18 @@ class code():
                     self.distanciaMMPerpendicular = round((self.distanciaMMPerpendicular)*10, 3)
                     self.flagDistancePerpendicular = False
                     image2 = cv2.putText(self.frame, "d2 = " + str(self.distanciaMMPerpendicular) + " mm", self.org2, self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
+
                 if self.new_points.size != 0:
                     self.area = self.contourArea(self.new_points)
                     self.area = round((self.area / self.conversao), 3)
 
-                    imageArea = cv2.putText(self.frame, "area = " + str(self.area) + "mm²", self.org3, self.font, self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
+                    imageArea = cv2.putText(self.frame, "area = " + str(self.area) + "mm2", self.org3, self.font, self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
+
+                if self.new_points.size != 0:
+                    self.area = self.contourArea(self.newref_points)
+                    self.area = round((self.area / self.conversao), 3)
+
+                    imageAreaRef = cv2.putText(self.frame, "area Ref = " + str(self.area) + "mm2", self.org4, self.font, self.fontScale, self.color4, self.thickness, cv2.LINE_AA)
 
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
