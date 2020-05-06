@@ -213,7 +213,7 @@ class code():
                     self.area = self.contourArea(self.newref_points)
                     self.area = round((self.area / self.conversao), 3)
 
-                    imageAreaRef = cv2.putText(self.frame, "area Ref = " + str(self.area) + "mm2", self.org4, self.font, self.fontScale, self.color4, self.thickness, cv2.LINE_AA)
+                    imageAreaRef = cv2.putText(self.frame, "area = " + str(self.area) + "mm2", self.org4, self.font, self.fontScale, self.color4, self.thickness, cv2.LINE_AA)
 
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
                 # comentado p nao estar sp a grvar
