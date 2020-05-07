@@ -176,6 +176,9 @@ class code():
                     self.center = self.centroide(self.new_points)
                     print("Centroide")
                     print(self.center)
+                    cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
+
+                    
 
                     self.frame = cv2.add(self.frame, self.spline)                                         # fazer o overlay do contour na main frame
                    # self.frame = cv2.add(self.frame, self.Refspline)
