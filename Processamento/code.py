@@ -88,6 +88,7 @@ class code():
         self.ref_points_firsts_frame = np.array([[]], dtype=np.float32)
         self.flag_hist = 1
         self.pause = True
+        self.center = (0,0)
 
         # Mouse Function
 
@@ -172,6 +173,9 @@ class code():
                     self.draw_vectors_and_set_histogram(self.new_points, self.vectors_factor)              #atualiza as variaveis para o histograma e desenha os vetores
                     self.old_points = self.new_points                                                 # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)
+                    self.center = self.centroide(self.new_points)
+                    print("Centroide")
+                    print(self.center)
 
                     self.frame = cv2.add(self.frame, self.spline)                                         # fazer o overlay do contour na main frame
                    # self.frame = cv2.add(self.frame, self.Refspline)
@@ -209,7 +213,7 @@ class code():
 
                     imageArea = cv2.putText(self.frame, "area = " + str(self.area) + "mm2", self.org3, self.font, self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
 
-                if self.new_points.size != 0:
+                if self.newref_points.size != 0:
                     self.area = self.contourArea(self.newref_points)
                     self.area = round((self.area / self.conversao), 3)
 
@@ -396,6 +400,11 @@ class code():
         contour = cv2.drawContours(frame_spline, [poly], 0, (0, 255, 0), 1)                          # desenho do contorno na "frame "contour
 
         return contour
+
+    def centroide(self, points):
+        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points), [len(points)] * 2))  # centro cartesiano dos pontos
+
+        return center
 
     def draw_Refspline(self, frame_spline, points):
         center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
