@@ -88,7 +88,6 @@ class code():
         self.ref_points_firsts_frame = np.array([[]], dtype=np.float32)
         self.flag_hist = 1
         self.pause = True
-        self.center = (0,0)
 
         # Mouse Function
 
@@ -176,9 +175,8 @@ class code():
                     self.center = self.centroide(self.new_points)
                     print("Centroide")
                     print(self.center)
-                    cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
 
-                    
+                    cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
 
                     self.frame = cv2.add(self.frame, self.spline)                                         # fazer o overlay do contour na main frame
                    # self.frame = cv2.add(self.frame, self.Refspline)
@@ -189,8 +187,15 @@ class code():
                         #self.ref_points = self.refTrack_points
                         self.vector_points = self.track_points
                         self.q = 1
+                        self.centroideAnterior = self.center
 
                     self.spline = np.zeros_like(self.spline)                                        # reset
+                    self.distancePercorridaCentroide = self.hipote(self.centroideAnterior[0], self.centroideAnterior[1], self.center[0], self.center[1])
+                    self.distancePercorridaCentroide = self.distancePercorridaCentroide / self.conversao
+                    self.distancePercorridaCentroide = round((self.distancePercorridaCentroide)*10, 3) #distancia percorrida pelo centroide de 6 em 6 frames
+                    print("distance")
+                    print(self.distancePercorridaCentroide)
+                    self.centroideAnterior = self.center
 
                 if len(self.vector_distance_2points) == 2:
                     self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0], self.vector_distance_2points[0][1],
