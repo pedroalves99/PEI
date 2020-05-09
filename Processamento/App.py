@@ -14,7 +14,7 @@ minDist = 4
 
 class App:
     def __init__(self):
-
+        self.opened = False
         self.window = Tk()
         self.window.title("EcoTracker")
         self.screenWidth = self.window.winfo_screenwidth()
@@ -32,8 +32,7 @@ class App:
 
         # BOTTOM LEFT BUTTONS
         self.exportExcelBt = Button(self.window, text="Excel export", width=int(self.screenWidth / 190),
-                                  height=int(self.screenHeight / 384), command = self.export).grid(row=13, column=1,padx=(0, self.screenWidth / 4.1))
-
+                                  height=int(self.screenHeight / 384), command = self.export).grid(row=13, column=1, padx=(0, self.screenWidth / 4.1))
 
 
         # VIDEO CANVAS
@@ -162,6 +161,8 @@ class App:
         self.videoCanvas = Canvas(self.window, width=self.video.width, height=self.video.height)
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth / 128,pady=(self.screenWidth / 192, 0))
         self.videoCanvas.configure(bg='grey')
+        self.filenameLb = Label(self.window, text=self.filename, font="helvetica 10 bold").grid(row=16, column=1, pady=10, padx=(20,0))
+        self.opened = True
 
     def getSpeed1x(self):
         self.delay = 15
@@ -177,14 +178,21 @@ class App:
 
     def export(self):
         filename = fd.asksaveasfilename()
-        filename = filename+".xlsx"
-        print(filename)
-        mb.showinfo(title="Done!", message="Exported successfully!") 
+        if(filename[-5:] != ".xlsx"):
+            filename = filename+".xlsx"
+        
+        if self.opened:
+            mb.showinfo(title="Done!", message="Exported successfully!")
+        else:
+            mb.showinfo(title="Error!", message="Please open a video first!")
 
     def saveFileDir(self):
-
         filename = fd.asksaveasfilename()
-        mb.showinfo(title="Done!", message="Saved successfully!")
+        if self.opened:
+            mb.showinfo(title="Done!", message="Saved successfully!")
+        else:
+            mb.showinfo(title="Error!", message="Please open a video first!")
+  
         # save com o code.py
 
     def distance(self):
