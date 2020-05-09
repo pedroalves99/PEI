@@ -29,6 +29,13 @@ class App:
         self.histogramBt = Button(self.window, text="Histogram", width=int(self.screenWidth / 190),
                                   height=int(self.screenHeight / 384), command = self.getHistogram).grid(row=1, column=1,padx=(0, self.screenWidth / 4.1))
 
+
+        # BOTTOM LEFT BUTTONS
+        self.exportExcelBt = Button(self.window, text="Excel export", width=int(self.screenWidth / 190),
+                                  height=int(self.screenHeight / 384), command = self.export).grid(row=13, column=1,padx=(0, self.screenWidth / 4.1))
+
+
+
         # VIDEO CANVAS
         self.videoCanvas = Canvas(self.window, width=self.screenWidth / 1.7, height=self.screenHeight / 1.3)
         self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth / 128,
@@ -168,6 +175,11 @@ class App:
     def getHistogram(self):
         code.showHistogram(self.video)
 
+    def export(self):
+        filename = fd.asksaveasfilename()
+        filename = filename+".xlsx"
+        print(filename)
+        mb.showinfo(title="Done!", message="Exported successfully!") 
 
     def saveFileDir(self):
 
