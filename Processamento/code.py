@@ -95,7 +95,9 @@ class code():
         self.ref_points_firsts_frame = np.array([[]], dtype=np.float32)
         self.flag_hist = 1
         self.pause = True
-        self.center = (0, 0)
+        self.center = None
+        self.centroideAnterior = None
+
 
         # Mouse Function
 
@@ -178,13 +180,19 @@ class code():
                                                                                         **self.lk_params)  # tracking Luccas Kanade, Optial flow
                     self.draw_vectors_and_set_histogram(self.new_points,
                                                         self.vectors_factor)  # atualiza as variaveis para o histograma e desenha os vetores
+
+                    self.center = self.centroide(self.new_points)
+
+                    self.draw_center_vectors(self.vectors_factor)    #fazer o hist
+
                     if self.t == self.framesPerVector:  # reset de arrays p every 10 frames
                         self.vector_points = self.old_points
+                        self.centroideAnterior = self.center
                         self.t = 0  # reset da variavel
 
                     self.old_points = self.new_points  # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)
-                    self.center = self.centroide(self.new_points)
+
                     # print("Centroide")
                     # print(self.center)
 
@@ -199,18 +207,14 @@ class code():
                         # self.ref_points = self.refTrack_points
                         self.vector_points = self.track_points
                         self.q = 1
-                        self.centroideAnterior = self.center
+
 
                     self.spline = np.zeros_like(self.spline)  # reset
 
-                    self.distancePercorridaCentroide = self.hipote(self.centroideAnterior[0], self.centroideAnterior[1],
-                                                                   self.center[0], self.center[1])
-                    self.distancePercorridaCentroide = self.distancePercorridaCentroide / self.conversao
-                    self.distancePercorridaCentroide = round((self.distancePercorridaCentroide) * 10,
-                                                             3)  # distancia percorrida pelo centroide de 6 em 6 frames
-                    print("distance")
-                    print(self.distancePercorridaCentroide)
-                    self.centroideAnterior = self.center
+
+                    #print("distance")
+                    #print(self.distancePercorridaCentroide)
+
 
                 if len(self.vector_distance_2points) == 2:
                     self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0],
@@ -469,6 +473,25 @@ class code():
         # print("Area")
         # print(area)
         return area
+
+    def draw_center_vectors(self, f1):
+
+        if self.old_points.size >= 2 and self.centroideAnterior is not None:
+          
+            grad_x, grad_y = self.center[0] - self.centroideAnterior[0],self.center[1] - self.centroideAnterior[1]
+            val_x = int(self.center[0] + (f1 * grad_x))  # fator
+            val_y = int(self.center[1] + (f1 * grad_y))
+
+            cv2.arrowedLine(self.frame, (int(self.center[0]), int(self.center[1])), (val_x, val_y), (0, 255, 255),1)  # f1 fator de aumento, para melhor visualização, ainda n foi posto
+
+
+            if self.flag_hist and self.t == self.framesPerVector: ##fazer o hist
+                self.distancePercorridaCentroide = self.hipote(self.centroideAnterior[0], self.centroideAnterior[1], #tava num sitio errado, é aqui
+                                                               self.center[0], self.center[1])
+                self.distancePercorridaCentroide = self.distancePercorridaCentroide / self.conversao
+                self.distancePercorridaCentroide = round((self.distancePercorridaCentroide) * 10,
+                                                         3)  # distancia percorrida pelo centroide de 6 em 6 frames
+
 
     def draw_vectors_and_set_histogram(self, points_to_track, f1):
         global frame, vector_points, arrayArrows
