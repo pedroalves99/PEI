@@ -62,13 +62,15 @@ class App:
         self.distance1 = Button(self.window, text="Distance 1", width=13, command=self.distance).grid(row=3, column=10, columnspan=2)
         self.distance2 = Button(self.window, text="Distance 2", width=13, command=self.distancePerpendicular).grid(row=4, column=10, columnspan=2)
         self.secContour = Button(self.window, text="Reference Contour", width=13, command=self.ref).grid(row=5, column=10, columnspan=2)
-        
+
         # BOTTOM RIGHT BUTTONS
         self.preferencesBt = Button(self.window, text="Preferences", width=13, command=self.optionsWindow).grid(row=7, column=10)
         self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=8, column=10)
-        self.oneBt = Button(self.window, text="1x", width=1, command = self.getSpeed1x).grid(row=9, column=10, sticky=E)
-        self.seventyFiveBt = Button(self.window, text="0.75x", width=1, command = self.getSpeed075x).grid(row=9, column=10)
-        self.halfBt = Button(self.window, text="0.5x", width=1, command = self.getSpeed05x).grid(row=9, column=10,sticky=W)
+        self.oneBt = Button(self.window, text="1x", width=3, command = self.getSpeed1x).grid(row=9, column=10, sticky=E)
+        self.seventyFiveBt = Button(self.window, text="0.75x", width=3, command = self.getSpeed075x).grid(row=9, column=10)
+        self.halfBt = Button(self.window, text="0.5x", width=3, command = self.getSpeed05x).grid(row=9, column=10,sticky=W)
+        #self.popupScale =
+
 
         self.filename = None
         self.delay = 15
@@ -88,7 +90,7 @@ class App:
         self.video.point_selected = True
         print("flagDistance")
         print(self.video.flagDistance)
-        if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef:
+        if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 255, 0),
                        -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
 
@@ -121,7 +123,7 @@ class App:
             else:
                 self.video.add_point_distance_perpendicular(event.x, event.y)
         if self.video.flagRef:
-            cv2.circle(self.video.frame, (event.x, event.y), 2,(255,255,0),-1)
+            cv2.circle(self.video.frame, (event.x, event.y), 2,(255,0,0),-1)
             if self.video.flagRef == 1:
                 self.video.ref_points=np.array([[event.x, event.y]],
                                                  dtype=np.float32)
@@ -129,6 +131,14 @@ class App:
             else:
                 self.video.addRef_point(event.x, event.y)
 
+        if self.video.manualScaleFlag:
+            cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 255, 0), -1)
+            if self.video.manualScaleFlag == 1:
+                self.video.vector_scale = np.array([[event.x, event.y]],
+                                                   dtype=np.float32)
+                self.video.manualScaleFlag += 1
+            else:
+                self.video.add_point_scale_vector(event.x, event.y)
 
 
     def update(self):  # função que serve de loop, chamada consoante o valor do self.delay em ms
@@ -142,6 +152,12 @@ class App:
             self.videoCanvas.bind("<Button 1>", self.select_point)
             self.video.execute()
 
+            print("flagScale")
+            print(self.video.manualScaleFlag)
+
+            if self.video.manualScaleFlag and not self.video.okClicked:
+                mb.showinfo(title="Error!", message="Mark scale manually on 1cm!")
+                self.video.okClicked = True
 
         self.window.after(self.delay, self.update)
 
@@ -155,6 +171,7 @@ class App:
         self.videoCanvas.configure(bg='grey')
         self.filenameLb = Label(self.window, text=self.filename, font="helvetica 9 bold").grid(row=14, column=0, sticky=W, padx=5)
         self.opened = True
+
 
     def getSpeed1x(self):
         self.delay = 15
@@ -184,8 +201,6 @@ class App:
             mb.showinfo(title="Done!", message="Saved successfully!")
         else:
             mb.showinfo(title="Error!", message="Please open a video first!")
-  
-        # save com o code.py
 
     def distance(self):
         self.video.flagDistance = True

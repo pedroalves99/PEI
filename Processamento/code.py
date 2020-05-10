@@ -105,13 +105,28 @@ class code():
         self.pause = True
         self.center = None
         self.centroideAnterior = None
+        self.vector_scale = np.array([[]],dtype=np.float32)  # variavel que contem os 2 pontos para calcular a escala
+        self.manualScaleFlag = False #flag ativada quando nao encontra a escala
+        self.doScale = True
+        self.okClicked = False
 
         # Mouse Function
 
     def execute(self):
         # cv2.namedWindow("Frame")
         # cv2.setMouseCallback("Frame", self.select_point)                                      # quando se carrega no rato ativa a funçao select_point
-        self.conversao = self.findScale(self.frame)
+        if self.doScale:
+            if not self.manualScaleFlag:
+                try:
+                    self.conversao = self.findScale(self.frame)
+                except IndexError:
+                    print("can't find scale")
+                    print("vector scale")
+                    print(self.vector_scale)
+                    self.manualScaleFlag = True
+            elif self.vector_scale.size > 2:
+                self.conversao = self.findScaleManually(self.vector_scale)
+                self.doScale = False
 
         if self.pause:  # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
 
@@ -126,6 +141,9 @@ class code():
                 self.array_distance_perpendicular_first_frame = self.vector_distance_perpendicular_2points
             if self.ref_points.size != 0:
                 self.ref_points_firsts_frame = self.ref_points
+
+            if len(self.vector_scale) == 2:
+                self.manualScaleFlag = False
         else:
 
             check, self.frame = self.cap.read()  # le frame a frame
@@ -139,7 +157,7 @@ class code():
                 # self.counts = defaultdict(int)
                 print("o")
                 print(self.counts)
-
+                self.doScale = True
                 # self.tmp7 = []
 
                 cap1 = cv2.VideoCapture(self.video_path)  # abrir nova captura
@@ -272,8 +290,7 @@ class code():
         # print(self.arrayMedidas)
         self.arrayMedidasCentroide = [sum(self.c_tmp), sum(self.c_tmp1), sum(self.c_tmp2), sum(self.c_tmp3),
                                       sum(self.c_tmp4), sum(self.c_tmp5), sum(self.c_tmp6), sum(self.c_tmp7)]
-        print("medidas")
-        print(self.arrayMedidasCentroide)
+
         # self.histogram(self.arrayMedidas, self.arrayArrows)
 
         # plt.show()
@@ -406,6 +423,11 @@ class code():
                                                                self.vector_distance_perpendicular_2points,
                                                                axis=0)  # faz append das coordenadas ao array
 
+    def add_point_scale_vector(self, x, y):
+        global vector_scale
+        a_point_scale = np.array([[x, y]], dtype=np.float32)
+        self.vector_scale = np.append(a_point_scale, self.vector_scale, axis=0)  # faz append das coordenadas ao array
+
     def trackDistancePoints(self):
 
         new_points, status, error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
@@ -456,6 +478,10 @@ class code():
 
         dist = self.hipote(figuras[0][3][0][0], figuras[0][3][0][1], figuras[1][2][0][0], figuras[1][2][0][1])
 
+        return dist
+
+    def findScaleManually(self, vector_scale):
+        dist = self.hipote(vector_scale[0][0], vector_scale[0][1], vector_scale[1][0], vector_scale[1][1])
         return dist
 
     def draw_spline(self, frame_spline, points):
@@ -566,8 +592,7 @@ class code():
                 for cardinal_point, count in self.counts.items():
                     # print(f'{cardinal_point} appears a total of {count} times.')
                     self.arrayArrowsCenter = [i for i in self.counts.values()]
-                    print("numero de vetores")
-                    print(self.arrayArrowsCenter)
+
                 # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
                 # print(tmp)
             i += 1
