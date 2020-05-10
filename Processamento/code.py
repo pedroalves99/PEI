@@ -44,6 +44,14 @@ class code():
         self.tmp5 = []
         self.tmp6 = []
         self.tmp7 = []
+        self.c_tmp = []
+        self.c_tmp1 = []
+        self.c_tmp2 = []
+        self.c_tmp3 = []
+        self.c_tmp4 = []
+        self.c_tmp5 = []
+        self.c_tmp6 = []
+        self.c_tmp7 = []
         self.counts = defaultdict(int)
         self.cardinal_points = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         self.point_selected = False
@@ -97,7 +105,6 @@ class code():
         self.pause = True
         self.center = None
         self.centroideAnterior = None
-
 
         # Mouse Function
 
@@ -158,6 +165,8 @@ class code():
                 self.vector_distance_perpendicular_2points = self.array_distance_perpendicular_first_frame
                 self.ref_points = self.ref_points_firsts_frame
                 self.flag_hist = 0  # já acabou o ciclo não desenha mais histograma
+                self.center = None
+                self.centroideAnterior = None
 
             else:
                 self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
@@ -183,7 +192,7 @@ class code():
 
                     self.center = self.centroide(self.new_points)
 
-                    self.draw_center_vectors(self.vectors_factor)    #fazer o hist
+                    self.draw_center_vectors(self.vectors_factor)  # fazer o hist
 
                     if self.t == self.framesPerVector:  # reset de arrays p every 10 frames
                         self.vector_points = self.old_points
@@ -208,13 +217,10 @@ class code():
                         self.vector_points = self.track_points
                         self.q = 1
 
-
                     self.spline = np.zeros_like(self.spline)  # reset
 
-
-                    #print("distance")
-                    #print(self.distancePercorridaCentroide)
-
+                    # print("distance")
+                    # print(self.distancePercorridaCentroide)
 
                 if len(self.vector_distance_2points) == 2:
                     self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0],
@@ -260,8 +266,14 @@ class code():
             # out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
             # cv2.imshow("Frame", self.frame)
 
-        # self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
-
+        self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),
+                             sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
+        # print("ola")
+        # print(self.arrayMedidas)
+        self.arrayMedidasCentroide = [sum(self.c_tmp), sum(self.c_tmp1), sum(self.c_tmp2), sum(self.c_tmp3),
+                                      sum(self.c_tmp4), sum(self.c_tmp5), sum(self.c_tmp6), sum(self.c_tmp7)]
+        print("medidas")
+        print(self.arrayMedidasCentroide)
         # self.histogram(self.arrayMedidas, self.arrayArrows)
 
         # plt.show()
@@ -270,7 +282,11 @@ class code():
         self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),
                              sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
         self.arrayx = np.true_divide(self.arrayMedidas, len(self.old_points))
-        self.histogram(self.arrayx, self.arrayArrows)
+
+        self.arrayMedidasCentroide = [sum(self.c_tmp), sum(self.c_tmp1), sum(self.c_tmp2), sum(self.c_tmp3),
+                                      sum(self.c_tmp4), sum(self.c_tmp5), sum(self.c_tmp6), sum(self.c_tmp7)]
+
+        self.histogram(self.arrayx, self.arrayArrows, self.arrayMedidasCentroide)
         plt.show()
 
     def __del__(self):
@@ -285,14 +301,15 @@ class code():
 
         return frame
 
-    def histogram(self, array1, array2):
+    def histogram(self, array1, array2, array3):
 
         bars = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         y_pos = np.arange(len(bars))
-        ax = plt.subplot(2, 1, 1)
+        ax = plt.subplot(3, 1, 1)
+
+        plt.tight_layout(pad=2.0)
         # Add title and axis names
-        ax.set_title('Movement histogram')
-        ax.set_ylabel('Moved distance(mm)')
+        ax.set_ylabel('Moved distance(mm)', labelpad=11)
         histograma = ax.bar(y_pos + 0.1, array1, width=0.4, color='steelblue', align='center', label='Distance(mm)')
         # print("check")
         # print(array2[0])
@@ -302,7 +319,7 @@ class code():
 
         bars1 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         y_pos1 = np.arange(len(bars))
-        ax1 = plt.subplot(2, 1, 2)
+        ax1 = plt.subplot(3, 1, 2)
         ax1.set_xlabel('Cardinal Points')
         ax1.set_ylabel('Number of vectors')
         histograma1 = ax1.bar(y_pos1 + 0.1, array2, width=0.4, color='darkgray', align='center',
@@ -312,7 +329,22 @@ class code():
         # Create names
         plt.xticks(y_pos1, bars1)
         leg1 = ax1.legend();
-        return histograma, histograma1
+
+        bars2 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+        y_pos2 = np.arange(len(bars))
+        ax2 = plt.subplot(3, 1, 3)
+        # Add title and axis names
+
+        ax2.set_ylabel('Center of mass(mm)', labelpad=11)
+        histograma2 = ax2.bar(y_pos2 + 0.1, array3, width=0.4, color='steelblue', align='center', label='Distance(mm)')
+        # print("check")
+        # print(array2[0])
+        # Create names
+        plt.xticks(y_pos2, bars2)
+        leg = ax2.legend();
+        print(self.arrayMedidasCentroide)
+        plt.subplots_adjust(left=0.17)
+        return histograma, histograma1, histograma2
 
     def hipote(self, x1, y1, x2, y2):  # teorema de pitagoras
         return math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))
@@ -475,23 +507,72 @@ class code():
         return area
 
     def draw_center_vectors(self, f1):
-
+        global frame, old_points, arrayArrowsCenter
+        global c_tmp, c_tmp1, c_tmp2, c_tmp3, c_tmp4, c_tmp5, c_tmp6, c_tmp7
+        i = 0
         if self.old_points.size >= 2 and self.centroideAnterior is not None:
-          
-            grad_x, grad_y = self.center[0] - self.centroideAnterior[0],self.center[1] - self.centroideAnterior[1]
+
+            grad_x, grad_y = self.center[0] - self.centroideAnterior[0], self.center[1] - self.centroideAnterior[1]
             val_x = int(self.center[0] + (f1 * grad_x))  # fator
             val_y = int(self.center[1] + (f1 * grad_y))
 
-            cv2.arrowedLine(self.frame, (int(self.center[0]), int(self.center[1])), (val_x, val_y), (0, 255, 255),1)  # f1 fator de aumento, para melhor visualização, ainda n foi posto
+            cv2.arrowedLine(self.frame, (int(self.center[0]), int(self.center[1])), (val_x, val_y), (0, 255, 255),
+                            1)  # f1 fator de aumento, para melhor visualização, ainda n foi posto
 
-
-            if self.flag_hist and self.t == self.framesPerVector: ##fazer o hist
-                self.distancePercorridaCentroide = self.hipote(self.centroideAnterior[0], self.centroideAnterior[1], #tava num sitio errado, é aqui
+            if self.flag_hist and self.t == self.framesPerVector:  ##fazer o hist
+                self.distancePercorridaCentroide = self.hipote(self.centroideAnterior[0], self.centroideAnterior[1],
+                                                               # tava num sitio errado, é aqui
                                                                self.center[0], self.center[1])
                 self.distancePercorridaCentroide = self.distancePercorridaCentroide / self.conversao
                 self.distancePercorridaCentroide = round((self.distancePercorridaCentroide) * 10,
                                                          3)  # distancia percorrida pelo centroide de 6 em 6 frames
 
+                exit = self.direcao(self.center[0], self.centroideAnterior[0], self.center[1],
+                                    self.centroideAnterior[
+                                        1])  # prints the direction of the cardinal points between two points!!
+                # print(exit)
+                if exit == self.cardinal_points[
+                    0]:  # tamanho pixeis de cada posição 'N' ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+                    self.c_tmp.append(self.distancePercorridaCentroide)
+
+                if exit == self.cardinal_points[1]:  # 'NE'
+                    # print("test")
+                    self.c_tmp1.append(self.distancePercorridaCentroide)
+
+                if exit == self.cardinal_points[2]:  # 'E'
+                    self.c_tmp2.append(self.distancePercorridaCentroide)
+                    # print(tmp2)
+                if exit == self.cardinal_points[3]:  # 'SE'
+                    self.c_tmp3.append(self.distancePercorridaCentroide)
+                    # print(tmp3)
+                if exit == self.cardinal_points[4]:  # 'S'
+                    self.c_tmp4.append(self.distancePercorridaCentroide)
+                    # print(tmp4)
+                if exit == self.cardinal_points[5]:  # 'SW'
+                    self.c_tmp5.append(self.distancePercorridaCentroide)
+                    # print(tmp5)
+                if exit == self.cardinal_points[6]:  # 'W'
+                    self.c_tmp6.append(self.distancePercorridaCentroide)
+                    # print(tmp6)
+                if exit == self.cardinal_points[7]:  # 'NW'
+                    self.c_tmp7.append(self.distancePercorridaCentroide)
+                    # print(tmp7)
+
+                for cardinal_point in self.cardinal_points:
+                    # this assumes exit.count() returns an int
+                    self.counts[cardinal_point] += exit.count(
+                        cardinal_point)  # counts the number of times North appears
+
+                for cardinal_point, count in self.counts.items():
+                    # print(f'{cardinal_point} appears a total of {count} times.')
+                    self.arrayArrowsCenter = [i for i in self.counts.values()]
+                    print("numero de vetores")
+                    print(self.arrayArrowsCenter)
+                # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
+                # print(tmp)
+            i += 1
+            # print(exit.count('N'))
+            # print(hipote(x,y,x+grad_x,y+grad_y))   #  shows the distance between these two poin
 
     def draw_vectors_and_set_histogram(self, points_to_track, f1):
         global frame, vector_points, arrayArrows
