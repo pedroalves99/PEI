@@ -17,68 +17,60 @@ class App:
         self.opened = False
         self.window = Tk()
         self.window.title("EcoTracker")
-        self.screenWidth = self.window.winfo_screenwidth()
-        self.screenHeight = self.window.winfo_screenheight()
-        if platform == "win32":
-            self.window.wm_state("zoomed")
-        else:
-            self.window.attributes("-zoomed", True)
+        self.window.geometry("1280x720")        #Fixed window size
+        self.window.resizable(False, False)
+        
+        # Para fullscreen, primeiro se for windows, depois se for linux
+        #if platform == "win32":
+        #    self.window.wm_state("zoomed")
+        #else:
+        #    self.window.attributes("-zoomed", True)
 
 
         # TOP LEFT BUTTONS
-        self.histogramBt = Button(self.window, text="Histogram", width=int(self.screenWidth / 190),
-                                  height=int(self.screenHeight / 384), command = self.getHistogram).grid(row=1, column=1,padx=(0, self.screenWidth / 4.1))
+        self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 300))
 
 
         # BOTTOM LEFT BUTTONS
-        self.exportExcelBt = Button(self.window, text="Excel export", width=int(self.screenWidth / 190),
-                                  height=int(self.screenHeight / 384), command = self.export).grid(row=13, column=1, padx=(0, self.screenWidth / 4.1))
+        self.exportExcelBt = Button(self.window, text="Excel export", width=10, height=1, command = self.export).grid(row=13, column=0, padx=5, sticky=W)
 
 
         # VIDEO CANVAS
-        self.videoCanvas = Canvas(self.window, width=self.screenWidth / 1.7, height=self.screenHeight / 1.3)
-        self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth / 128,
-                              pady=(self.screenWidth / 192, 0))
+        self.videoCanvas = Canvas(self.window, width=736, height=552)
+        self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10)
 
         self.videoCanvas.configure(bg='grey')
 
 
         # PLAY BUTTON
         self.playImage = PhotoImage(file="playbutton.png")  
-        self.playButton = Button(self.window, width=int(self.screenWidth/30), height=int(self.screenWidth/30), image=self.playImage, command=self.play)
+        self.playButton = Button(self.window, width=50, height=50, image=self.playImage, command=self.play)
         self.playButton["border"] = "0"
-        self.playButton.grid(row=11, column=3)
+        self.playButton.grid(row=11, column=5)
 
         # PAUSE BUTTON
         self.pauseImage = PhotoImage(file="pausebutton.png")  
-        self.pauseButton = Button(self.window, width=int(self.screenWidth/29), height=int(self.screenWidth/29), image=self.pauseImage, command=self.play)
+        self.pauseButton = Button(self.window, width=50, height=50, image=self.pauseImage, command=self.play)
         self.pauseButton["border"] = "0"
-        self.pauseButton.grid(row=11, column=3)
+        self.pauseButton.grid(row=11, column=5)
         self.pauseButton.grid_remove()
 
         # TOP RIGHT BUTTONS
-        self.openBt = Button(self.window, text="Open", width=int(self.screenWidth / 100), command=self.getFileDir).grid(
-            row=1, column=5, columnspan=2)
-        self.saveAsBt = Button(self.window, text="Save As", width=int(self.screenWidth / 100),
-                               command=self.saveFileDir).grid(row=2, column=5, columnspan=2)
-        self.resetPointsBt = Button(self.window, text="Reset All", width=int(self.screenWidth / 100), command=self.delAll).grid(row=3,column=5, columnspan=2)
-        self.distance1 = Button(self.window, text="Distance 1", width=int(self.screenWidth / 100),
-                                command=self.distance).grid(row=4, column=5, columnspan=2)
-        self.distance2 = Button(self.window, text="Distance 2", width=int(self.screenWidth / 100),
-                                command=self.distancePerpendicular).grid(row=5, column=5, columnspan=2)
-        self.secContour = Button(self.window, text="Reference Contour", width=int(self.screenWidth / 100), command=self.ref).grid(row=6, column=5, columnspan=2)
+        self.openBt = Button(self.window, text="Open", command=self.getFileDir, width=13).grid(row=0, column=10, columnspan=2, padx=10)
+        self.saveAsBt = Button(self.window, text="Save As", width=13, command=self.saveFileDir).grid(row=1, column=10, columnspan=2)
+        self.resetPointsBt = Button(self.window, text="Reset All", width=13, command=self.delAll).grid(row=2,column=10, columnspan=2)
+        self.distance1 = Button(self.window, text="Distance 1", width=13, command=self.distance).grid(row=3, column=10, columnspan=2)
+        self.distance2 = Button(self.window, text="Distance 2", width=13, command=self.distancePerpendicular).grid(row=4, column=10, columnspan=2)
+        self.secContour = Button(self.window, text="Reference Contour", width=13, command=self.ref).grid(row=5, column=10, columnspan=2)
+        
         # BOTTOM RIGHT BUTTONS
-        self.preferencesBt = Button(self.window, text="Preferences", width=int(self.screenWidth / 100),
-                                    command=self.optionsWindow).grid(row=7, column=5, pady=(
-        self.screenWidth / 6.4, self.screenHeight / 192))
-        self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=8, column=5,pady=0)
-        self.oneBt = Button(self.window, text="1x", width=int(self.screenWidth / 1000), command = self.getSpeed1x).grid(row=9, column=5, sticky=E)
-        self.seventyFiveBt = Button(self.window, text="0.75x", width=int(self.screenWidth / 1000), command = self.getSpeed075x).grid(row=9, column=5)
-        self.halfBt = Button(self.window, text="0.5x", width=int(self.screenWidth / 1000), command = self.getSpeed05x).grid(row=9, column=5,sticky=W)
+        self.preferencesBt = Button(self.window, text="Preferences", width=13, command=self.optionsWindow).grid(row=7, column=10)
+        self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=8, column=10)
+        self.oneBt = Button(self.window, text="1x", width=1, command = self.getSpeed1x).grid(row=9, column=10, sticky=E)
+        self.seventyFiveBt = Button(self.window, text="0.75x", width=1, command = self.getSpeed075x).grid(row=9, column=10)
+        self.halfBt = Button(self.window, text="0.5x", width=1, command = self.getSpeed05x).grid(row=9, column=10,sticky=W)
 
         self.filename = None
-
-
         self.delay = 15
         self.update()
 
@@ -159,9 +151,9 @@ class App:
         self.videoCanvas.destroy()      #destroi o canvas que estava e mete um com o size proporcional ao video
 
         self.videoCanvas = Canvas(self.window, width=self.video.width, height=self.video.height)
-        self.videoCanvas.grid(row=1, column=3, rowspan=10, padx=self.screenWidth / 128,pady=(self.screenWidth / 192, 0))
+        self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10)
         self.videoCanvas.configure(bg='grey')
-        self.filenameLb = Label(self.window, text=self.filename, font="helvetica 10 bold").grid(row=16, column=1, pady=10, padx=(20,0))
+        self.filenameLb = Label(self.window, text=self.filename, font="helvetica 9 bold").grid(row=14, column=0, sticky=W, padx=5)
         self.opened = True
 
     def getSpeed1x(self):
@@ -233,16 +225,13 @@ class App:
 
         # Resets changes to default values
         resetBt = Button(optionsWindow, text="Reset", width=10, height=1,
-                         command=lambda: self.insertVal(nfvEntry, minDistEntry)).grid(row=3, column=2, padx=(20, 5),
-                                                                                      pady=(15, 0))
+                         command=lambda: self.insertVal(nfvEntry, minDistEntry)).grid(row=3, column=2, padx=(20, 5), pady=(15, 0))
 
         # Closes window, discards changes
-        discardBt = Button(optionsWindow, text="Discard", width=10, height=1,
-                           command=lambda: optionsWindow.destroy()).grid(row=3, column=3, padx=(28, 0), pady=(15, 0))
+        discardBt = Button(optionsWindow, text="Discard", width=10, height=1, command=lambda: optionsWindow.destroy()).grid(row=3, column=3, padx=(28, 0), pady=(15, 0))
 
         # Closes window, saves values
-        confirmBt = Button(optionsWindow, text="Confirm", width=10, height=1,
-                           command=lambda: self.saveValues(nfvEntry, minDistEntry, optionsWindow)).grid(row=3, column=4,padx=(5, 0),pady=(15, 0))
+        confirmBt = Button(optionsWindow, text="Confirm", width=10, height=1, command=lambda: self.saveValues(nfvEntry, minDistEntry, optionsWindow)).grid(row=3, column=4,padx=(5, 0),pady=(15, 0))
 
     def insertVal(self, nfvEntry, minDistEntry):
         nfvEntry.delete(0, END)
