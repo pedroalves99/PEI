@@ -32,13 +32,16 @@ class App:
 
 
         # BOTTOM LEFT BUTTONS
-        self.exportExcelBt = Button(self.window, text="Excel export", width=10, height=1, command = self.export).grid(row=13, column=0, padx=5, sticky=W)
+        self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W, padx=(5,0))
+        self.evaluationType = Entry(self.window, width=34)
+        self.evaluationType.grid(row=11, column=0, sticky=W+S, padx=(5,0), pady=(0,1))
+        self.exportExcelBt = Button(self.window, text="Create Excel", width=10, height=1, command = lambda: self.exportExcel(self.evaluationType.get())).grid(row=12, column=0, padx=(5,0), sticky=W)
+        self.addExcelBt = Button(self.window, text="Add to Excel", width=10, height=1, command = lambda: self.addExcel(self.evaluationType.get())).grid(row=12, column=0)
 
 
         # VIDEO CANVAS
         self.videoCanvas = Canvas(self.window, width=736, height=552)
         self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10)
-
         self.videoCanvas.configure(bg='grey')
 
 
@@ -84,9 +87,7 @@ class App:
         self.playButton.grid()
         self.video.pause = True
 
-
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
-
         self.video.point_selected = True
         print("flagDistance")
         print(self.video.flagDistance)
@@ -142,7 +143,6 @@ class App:
 
 
     def update(self):  # função que serve de loop, chamada consoante o valor do self.delay em ms
-
         if self.filename is not None:  # and self.playing:
             self.frame = cv2.cvtColor(self.video.frame, cv2.COLOR_BGR2RGB)  # Rgb to Bgr
             self.resized = PIL.Image.fromarray(
@@ -185,17 +185,31 @@ class App:
     def getHistogram(self):
         code.showHistogram(self.video)
 
-    def export(self):
-        filename = fd.asksaveasfilename()
-        if(filename[-5:] != ".xlsx"):
-            filename = filename+".xlsx"
+    def exportExcel(self, evaluationType):
+        if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
+            filename = fd.asksaveasfilename()
+            if(filename[-5:] != ".xlsx" or filename[-4:] != ".xls"):
+                filename = filename+".xlsx"
+            if self.opened:
+                mb.showinfo(title="Done!", message="Exported successfully!")
+            else:
+                mb.showinfo(title="Error!", message="Please open a video first!")
+        else:
+            mb.showinfo(title="Done!", message="Please fill in the evaluation Type!")
         
-        if self.opened:
+        
+       
+
+    def addExcel(self, evaluationType):
+        if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
+            # FAZER AS COISAS AQUI
+            self.filename = fd.askopenfilename(filetypes=[("Excel sheet", ".xls .xlsx")])
             mb.showinfo(title="Done!", message="Exported successfully!")
         else:
-            mb.showinfo(title="Error!", message="Please open a video first!")
+            mb.showinfo(title="Done!", message="Please fill in the evaluation Type!")
+        
 
-    def saveFileDir(self):
+    def saveFileDir(self, evaluationType):
         filename = fd.asksaveasfilename()
         if self.opened:
             mb.showinfo(title="Done!", message="Saved successfully!")
