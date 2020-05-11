@@ -32,7 +32,7 @@ class App:
 
 
         # BOTTOM LEFT BUTTONS
-        self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W, padx=(5,0))
+        self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W+N, padx=(5,0))
         self.evaluationType = Entry(self.window, width=34)
         self.evaluationType.grid(row=11, column=0, sticky=W+S, padx=(5,0), pady=(0,1))
         self.exportExcelBt = Button(self.window, text="Create Excel", width=10, height=1, command = lambda: self.exportExcel(self.evaluationType.get())).grid(row=12, column=0, padx=(5,0), sticky=W)
@@ -49,13 +49,13 @@ class App:
         self.playImage = PhotoImage(file="playbutton.png")  
         self.playButton = Button(self.window, width=50, height=50, image=self.playImage, command=self.play)
         self.playButton["border"] = "0"
-        self.playButton.grid(row=11, column=5)
+        self.playButton.grid(row=12, column=5)
 
         # PAUSE BUTTON
         self.pauseImage = PhotoImage(file="pausebutton.png")  
         self.pauseButton = Button(self.window, width=50, height=50, image=self.pauseImage, command=self.play)
         self.pauseButton["border"] = "0"
-        self.pauseButton.grid(row=11, column=5)
+        self.pauseButton.grid(row=12, column=5)
         self.pauseButton.grid_remove()
 
         # TOP RIGHT BUTTONS
@@ -72,6 +72,10 @@ class App:
         self.oneBt = Button(self.window, text="1x", width=3, command = self.getSpeed1x).grid(row=9, column=10, sticky=E, columnspan=2)
         self.seventyFiveBt = Button(self.window, text="0.75x", width=3, command = self.getSpeed075x).grid(row=9, column=10, columnspan=2)
         self.halfBt = Button(self.window, text="0.5x", width=3, command = self.getSpeed05x).grid(row=9, column=10,sticky=W, columnspan=2)
+        
+        # SCALE BAR
+        self.scaleBar = Scale(self.window, from_=0, to=1000, orient=HORIZONTAL, length=735)
+        self.scaleBar.grid(row=11, column=5)
 
         self.filename = None
         self.delay = 15
