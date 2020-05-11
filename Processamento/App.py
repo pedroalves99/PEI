@@ -67,13 +67,11 @@ class App:
         self.secContour = Button(self.window, text="Reference Contour", width=13, command=self.ref).grid(row=5, column=10, columnspan=2)
 
         # BOTTOM RIGHT BUTTONS
-        self.preferencesBt = Button(self.window, text="Preferences", width=13, command=self.optionsWindow).grid(row=7, column=10)
-        self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=8, column=10)
-        self.oneBt = Button(self.window, text="1x", width=3, command = self.getSpeed1x).grid(row=9, column=10, sticky=E)
-        self.seventyFiveBt = Button(self.window, text="0.75x", width=3, command = self.getSpeed075x).grid(row=9, column=10)
-        self.halfBt = Button(self.window, text="0.5x", width=3, command = self.getSpeed05x).grid(row=9, column=10,sticky=W)
-        #self.popupScale =
-
+        self.preferencesBt = Button(self.window, text="Preferences", width=13, command=self.optionsWindow).grid(row=7, column=10, columnspan=2)
+        self.playbackSpeedLb = Label(self.window, text="Playback Speed", font="helvetica 10 bold").grid(row=8, column=10, columnspan=2)
+        self.oneBt = Button(self.window, text="1x", width=3, command = self.getSpeed1x).grid(row=9, column=10, sticky=E, columnspan=2)
+        self.seventyFiveBt = Button(self.window, text="0.75x", width=3, command = self.getSpeed075x).grid(row=9, column=10, columnspan=2)
+        self.halfBt = Button(self.window, text="0.5x", width=3, command = self.getSpeed05x).grid(row=9, column=10,sticky=W, columnspan=2)
 
         self.filename = None
         self.delay = 15
