@@ -152,15 +152,7 @@ class code():
 
         if self.pause:  # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
 
-            cap2 = self.cap
-            if self.flag_c == 0:
-                while cap2.isOpened():
-                    ret, frame = cap2.read()
-                    if not ret:
-                        break
-                    self.num_frames += 1
-                self.flag_c = 1
-            # cv2.imshow('Frame', self.frame)
+
 
             #tirar daqui ------------
 
