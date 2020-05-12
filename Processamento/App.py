@@ -28,9 +28,8 @@ class App:
 
 
         # TOP LEFT BUTTONS
-        self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 300))
-
-
+        self.histogramBt = Button(self.window, text="Histogram", width=13, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 300))
+        self.referenceHistogrma = Button(self.window, text="Reference Histogram", width=13, height=1, command = self.getReferenceHistogram).grid(row=1, column=0, pady=2, padx=(5,300))
         # BOTTOM LEFT BUTTONS
         self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W+N, padx=(5,0))
         self.evaluationType = Entry(self.window, width=34)
@@ -147,8 +146,8 @@ class App:
             self.videoCanvas.bind("<Button 1>", self.select_point)
             self.video.execute()
 
-            print("flagScale")
-            print(self.video.manualScaleFlag)
+            #print("flagScale")
+            #print(self.video.manualScaleFlag)
 
             if self.video.manualScaleFlag and not self.video.okClicked:
                 mb.showinfo(title="Error!", message="Mark scale manually on 1cm!")
@@ -179,6 +178,9 @@ class App:
 
     def getHistogram(self):
         code.showHistogram(self.video)
+
+    def getReferenceHistogram(self):
+        code.showReferenceHistogram(self.video)
 
     def exportExcel(self, evaluationType):
         if len(evaluationType) != 0 and evaluationType != "Evaluation Type":

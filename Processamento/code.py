@@ -52,6 +52,16 @@ class code():
         self.c_tmp5 = []
         self.c_tmp6 = []
         self.c_tmp7 = []
+        self.r_tmp = []
+        self.r_tmp1 = []
+        self.r_tmp2 = []
+        self.r_tmp3 = []
+        self.r_tmp4 = []
+        self.r_tmp5 = []
+        self.r_tmp6 = []
+        self.r_tmp7 = []
+
+
         self.counts = defaultdict(int)
         self.cardinal_points = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         self.point_selected = False
@@ -310,6 +320,9 @@ class code():
         self.arrayMedidasCentroide = [sum(self.c_tmp), sum(self.c_tmp1), sum(self.c_tmp2), sum(self.c_tmp3),
                                       sum(self.c_tmp4), sum(self.c_tmp5), sum(self.c_tmp6), sum(self.c_tmp7)]
 
+        self.arrayMedidasReference = [sum(self.r_tmp), sum(self.r_tmp1), sum(self.r_tmp2), sum(self.r_tmp3),
+                                      sum(self.r_tmp4), sum(self.r_tmp5), sum(self.r_tmp6), sum(self.r_tmp7)]
+
         # self.histogram(self.arrayMedidas, self.arrayArrows)
 
         # plt.show()
@@ -325,6 +338,13 @@ class code():
         self.histogram(self.arrayx, self.arrayArrows, self.arrayMedidasCentroide)
         plt.show()
 
+    def showReferenceHistogram(self):
+        self.arrayMedidasReference = [sum(self.r_tmp), sum(self.r_tmp1), sum(self.r_tmp2), sum(self.r_tmp3),
+                                      sum(self.r_tmp4), sum(self.r_tmp5), sum(self.r_tmp6), sum(self.r_tmp7)]
+        self.array2 = np.true_divide(self.arrayMedidasReference, len(self.ref_points))
+        self.ReferenceHistogram(self.array2)
+        plt.show()
+
     def __del__(self):
         self.cap.release()
         cv2.destroyAllWindows()
@@ -337,11 +357,32 @@ class code():
 
         return frame
 
-    def histogram(self, array1, array2, array3):
-
+    def ReferenceHistogram(self, array1):
+        f1 = plt.figure()
         bars = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         y_pos = np.arange(len(bars))
-        ax = plt.subplot(3, 1, 1)
+        ax = f1.add_subplot(1, 1, 1)
+        ax.set_xlabel('Cardinal Points')
+        plt.tight_layout(pad=2.0)
+        # Add title and axis names
+        ax.set_ylabel('Moved distance(mm)', labelpad=11)
+        histograma = ax.bar(y_pos + 0.1, array1, width=0.4, color='steelblue', align='center', label='Distance(mm)')
+        # print("check")
+        # print(array2[0])
+        # Create names
+        ax.set_title('Reference Histogram')
+        plt.xticks(y_pos, bars)
+        leg = ax.legend();
+        plt.subplots_adjust(left=0.17)
+
+        return histograma
+
+
+    def histogram(self, array1, array2, array3):
+        f2 = plt.figure()
+        bars = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+        y_pos = np.arange(len(bars))
+        ax = f2.add_subplot(3, 1, 1)
 
         plt.tight_layout(pad=2.0)
         # Add title and axis names
@@ -356,7 +397,6 @@ class code():
         bars1 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         y_pos1 = np.arange(len(bars))
         ax1 = plt.subplot(3, 1, 2)
-        ax1.set_xlabel('Cardinal Points')
         ax1.set_ylabel('Number of vectors')
         histograma1 = ax1.bar(y_pos1 + 0.1, array2, width=0.4, color='darkgray', align='center',
                               label='Number of vectors')
@@ -369,6 +409,7 @@ class code():
         bars2 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         y_pos2 = np.arange(len(bars))
         ax2 = plt.subplot(3, 1, 3)
+        ax2.set_xlabel('Cardinal Points')
         # Add title and axis names
 
         ax2.set_ylabel('Center of mass(mm)', labelpad=11)
@@ -632,9 +673,53 @@ class code():
                     cv2.arrowedLine(self.frame, (x, y), (val_x, val_y), (0, 255, 255),1)
 
                     if self.flag_hist == 1 and self.t == self.framesPerVector: #fazer hist
-                        pass
+                        tamanho = self.hipote(x, y, x + grad_x, y + grad_y)
+                        tamanho = tamanho / self.conversao * 10
+                        # print(tamanho)
+                        exit = self.direcao(x + grad_x, x, y + grad_y,
+                                            y)  # prints the direction of the cardinal points between two points!!
+                        # print(exit)
+                        if exit == self.cardinal_points[
+                            0]:  # tamanho pixeis de cada posição 'N' ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+                            self.r_tmp.append(tamanho)
 
-                i += 1
+                        if exit == self.cardinal_points[1]:  # 'NE'
+                            # print("test")
+                            self.r_tmp1.append(tamanho)
+
+                        if exit == self.cardinal_points[2]:  # 'E'
+                            self.r_tmp2.append(tamanho)
+                            # print(tmp2)
+                        if exit == self.cardinal_points[3]:  # 'SE'
+                            self.r_tmp3.append(tamanho)
+                            # print(tmp3)
+                        if exit == self.cardinal_points[4]:  # 'S'
+                            self.r_tmp4.append(tamanho)
+                            # print(tmp4)
+                        if exit == self.cardinal_points[5]:  # 'SW'
+                            self.r_tmp5.append(tamanho)
+                            # print(tmp5)
+                        if exit == self.cardinal_points[6]:  # 'W'
+                            self.r_tmp6.append(tamanho)
+                            # print(tmp6)
+                        if exit == self.cardinal_points[7]:  # 'NW'
+                            self.r_tmp7.append(tamanho)
+                            # print(tmp7)
+
+                        for cardinal_point in self.cardinal_points:
+                            # this assumes exit.count() returns an int
+                            self.counts[cardinal_point] += exit.count(
+                                cardinal_point)  # counts the number of times North appears
+
+                        for cardinal_point, count in self.counts.items():
+                            # print(f'{cardinal_point} appears a total of {count} times.')
+                            self.arrayReferenceArrows = [i for i in self.counts.values()]
+                            # print(arrayArrows)
+                        # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
+                        # print(tmp)
+                    i += 1
+                    # print(exit.count('N'))
+                    # print(hipote(x,y,x+grad_x,y+grad_y))   #  shows the distance between these two points
 
 
 
