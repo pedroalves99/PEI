@@ -19,17 +19,11 @@ class App:
         self.window.title("EcoTracker")
         self.window.geometry("1280x720")        #Fixed window size
         self.window.resizable(False, False)
-        
-        # Para fullscreen, primeiro se for windows, depois se for linux
-        #if platform == "win32":
-        #    self.window.wm_state("zoomed")
-        #else:
-        #    self.window.attributes("-zoomed", True)
-
 
         # TOP LEFT BUTTONS
-        self.histogramBt = Button(self.window, text="Histogram", width=13, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 300))
-        self.referenceHistogrma = Button(self.window, text="Reference Histogram", width=13, height=1, command = self.getReferenceHistogram).grid(row=1, column=0, pady=2, padx=(5,300))
+        self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 300))
+        self.referenceHistogram = Button(self.window, text="Reference Histogram", width=15, height=1, command = self.getReferenceHistogram).grid(row=0, column=0, pady=2)
+
         # BOTTOM LEFT BUTTONS
         self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W+N, padx=(5,0))
         self.evaluationType = Entry(self.window, width=34)
@@ -37,12 +31,10 @@ class App:
         self.exportExcelBt = Button(self.window, text="Create Excel", width=10, height=1, command = lambda: self.exportExcel(self.evaluationType.get())).grid(row=12, column=0, padx=(5,0), sticky=W)
         self.addExcelBt = Button(self.window, text="Add to Excel", width=10, height=1, command = lambda: self.addExcel(self.evaluationType.get())).grid(row=12, column=0)
 
-
         # VIDEO CANVAS
         self.videoCanvas = Canvas(self.window, width=736, height=552)
-        self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10)
+        self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10, pady=(15,0))
         self.videoCanvas.configure(bg='grey')
-
 
         # PLAY BUTTON
         self.playImage = PhotoImage(file="playbutton.png")  
@@ -73,14 +65,22 @@ class App:
         self.halfBt = Button(self.window, text="0.5x", width=3, command = self.getSpeed05x).grid(row=9, column=10,sticky=W, columnspan=2)
         
         # SCALE BAR
-        self.scaleBar = Scale(self.window, from_=0, to=1000, orient=HORIZONTAL, length=735)
-        self.scaleBar.grid(row=11, column=5)
+        self.scaleBar = Scale(self.window, from_=0, to=1000, orient=HORIZONTAL, length=650)
+        self.scaleBar.grid(row=11, column=5, padx=40)
+        self.plusBt = Button(self.window, text=">", font="helvetica 10 bold", command = self.increaseFrame).grid(row=11, column=5, sticky=E+S)
+        self.minusBt = Button(self.window, text="<", font="helvetica 10 bold", command = self.decreaseFrame).grid(row=11, column=5, sticky=W+S)
 
         self.filename = None
         self.delay = 15
         self.update()
 
         self.window.mainloop()
+
+    def increaseFrame(self):
+        self.scaleBar.set(self.scaleBar.get()+1)
+
+    def decreaseFrame(self):
+        self.scaleBar.set(self.scaleBar.get()-1)
 
     def delAll(self):
         self.video = code(self.filename, framesPerVector, minDist)
@@ -161,7 +161,7 @@ class App:
         self.videoCanvas.destroy()      #destroi o canvas que estava e mete um com o size proporcional ao video
 
         self.videoCanvas = Canvas(self.window, width=self.video.width, height=self.video.height)
-        self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10)
+        self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10, pady=(15,0))
         self.videoCanvas.configure(bg='grey')
         self.filenameLb = Label(self.window, text=self.filename, font="helvetica 9 bold").grid(row=14, column=0, sticky=W, padx=5)
         self.opened = True
