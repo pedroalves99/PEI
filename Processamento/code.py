@@ -17,11 +17,11 @@ class code():
         self.scale_percent = 115  # percentagem de aumento do video - default 100%
         self.video_path = video_path
         # Lukas Kanade params
-        self.lk_params_dist = dict(winSize=(22, 22),
+        self.lk_params_dist = dict(winSize=(25, 25),
                                    # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
                                    maxLevel=4,
                                    criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
-        self.lk_params = dict(winSize=(22, 22),
+        self.lk_params = dict(winSize=(25, 25),
                               maxLevel=4,
                               criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
         self.cap = cv2.VideoCapture(
@@ -100,15 +100,17 @@ class code():
         self.thickness = 2
         self.array_distance_first_frame = np.array([[]], dtype=np.float32)
         self.array_distance_perpendicular_first_frame = np.array([[]], dtype=np.float32)
-        self.ref_points_firsts_frame = np.array([[]], dtype=np.float32)
+        self.ref_points_first_frame = np.array([[]], dtype=np.float32)
         self.flag_hist = 1
         self.pause = True
         self.center = None
         self.centroideAnterior = None
         self.vector_scale = np.array([[]],dtype=np.float32)  # variavel que contem os 2 pontos para calcular a escala
+        self.vector_points_ref = np.array([[]],dtype=np.float32)
         self.manualScaleFlag = False #flag ativada quando nao encontra a escala
         self.doScale = True
         self.okClicked = False
+        self.q1 = 0
 
         # Mouse Function
 
@@ -128,19 +130,19 @@ class code():
                 self.conversao = self.findScaleManually(self.vector_scale)
                 self.doScale = False
 
+        if len(self.vector_distance_2points) == 2 and self.flagDistance:  # tem que estar no select_point
+            self.flagDistance = False
+            self.array_distance_first_frame = self.vector_distance_2points
+
+        if len(self.vector_distance_perpendicular_2points) == 2 and self.flagDistancePerpendicular:
+            self.flagDistancePerpendicular = False
+            self.array_distance_perpendicular_first_frame = self.vector_distance_perpendicular_2points
+
         if self.pause:  # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
 
             # cv2.imshow('Frame', self.frame)
 
-            if len(self.vector_distance_2points) == 2:  # tem que estar no select_point
-                self.flagDistance = False
-                self.array_distance_first_frame = self.vector_distance_2points
-
-            if len(self.vector_distance_perpendicular_2points) == 2:
-                self.flagDistancePerpendicular = False
-                self.array_distance_perpendicular_first_frame = self.vector_distance_perpendicular_2points
-            if self.ref_points.size != 0:
-                self.ref_points_firsts_frame = self.ref_points
+            #tirar daqui ------------
 
             if len(self.vector_scale) == 2:
                 self.manualScaleFlag = False
@@ -175,13 +177,16 @@ class code():
                 self.old_points = self.origin_points
                 self.ref_points
                 self.q = 0
+                self.q1 = 0
                 self.vector_points = np.array([[]],
                                               dtype=np.float32)  # variável que contem os pontos n frames antes, para fazer os vetores
+                self.vector_points_ref = np.array([[]],
+                                              dtype=np.float32)
                 self.t = 0
                 self.x = 0
                 self.vector_distance_2points = self.array_distance_first_frame
                 self.vector_distance_perpendicular_2points = self.array_distance_perpendicular_first_frame
-                self.ref_points = self.ref_points_firsts_frame
+                self.ref_points = self.ref_points_first_frame
                 self.flag_hist = 0  # já acabou o ciclo não desenha mais histograma
                 self.center = None
                 self.centroideAnterior = None
@@ -194,13 +199,23 @@ class code():
                                                                                                  self.gray_frame,
                                                                                                  self.ref_points, None,
                                                                                                  **self.lk_params)
+                    self.draw_reference_vectors(self.newref_points, self.vectors_factor)
+
                     self.ref_points = self.newref_points
                     # draw spline with the new pointscofcof
                     self.Refspline = self.draw_Refspline(self.Refspline, self.newref_points)
 
-                    self.frame = cv2.add(self.frame, self.Refspline)
-                    self.Refspline = np.zeros_like(self.Refspline)
 
+
+                    self.frame = cv2.add(self.frame, self.Refspline)
+
+                    if self.q1 == 0:
+                        self.refTrack_points = self.resample_points(self.Refspline, self.dif)
+                        self.ref_points = self.refTrack_points
+                        self.vector_points_ref = self.refTrack_points
+                        print("so uma vez")
+                        self.q1 = 1
+                #print("points" + str (self.vector_points_ref))
                 if self.old_points.size != 0:  # 1st contour
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
                                                                                         self.old_points, None,
@@ -212,11 +227,6 @@ class code():
 
                     self.draw_center_vectors(self.vectors_factor)  # fazer o hist
 
-                    if self.t == self.framesPerVector:  # reset de arrays p every 10 frames
-                        self.vector_points = self.old_points
-                        self.centroideAnterior = self.center
-                        self.t = 0  # reset da variavel
-
                     self.old_points = self.new_points  # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)
 
@@ -226,16 +236,14 @@ class code():
                     cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
 
                     self.frame = cv2.add(self.frame, self.spline)  # fazer o overlay do contour na main frame
-                    self.frame = cv2.add(self.frame, self.Refspline)
-                    if self.q == 0:  # só faz o resampling 1 vez
-                        self.track_points = self.resample_points(self.spline, self.dif)
-                        # self.refTrack_points = self.resample_points(self.Refspline, self.dif)
-                        self.old_points = self.track_points
-                        # self.ref_points = self.refTrack_points
-                        self.vector_points = self.track_points
-                        self.q = 1
 
-                    self.spline = np.zeros_like(self.spline)  # reset
+                    if self.q == 0:  # só faz o resampling 1 vez
+                        if self.old_points.size != 0:
+                            self.track_points = self.resample_points(self.spline, self.dif)
+                            self.old_points = self.track_points
+                            self.vector_points = self.track_points
+                            self.q = 1
+
 
                     # print("distance")
                     # print(self.distancePercorridaCentroide)
@@ -279,7 +287,18 @@ class code():
                     imageAreaRef = cv2.putText(self.frame, "area = " + str(self.area) + "mm2", self.org4, self.font,
                                                self.fontScale, self.color4, self.thickness, cv2.LINE_AA)
 
+                if self.t == self.framesPerVector:  # reset de arrays p every 10 frames
+                    self.vector_points = self.old_points
+                    self.centroideAnterior = self.center
+                    self.vector_points_ref = self.ref_points
+                    self.t = 0  # reset da variavel
+
+                self.spline = np.zeros_like(self.spline)  # reset
+                self.Refspline = np.zeros_like(self.Refspline)
+
             self.old_frame = self.gray_frame.copy()  # a frame em que estamos passa a ser a anterior do próximo ciclo
+
+
             # comentado p nao estar sp a grvar
             # out.write(frame)    # grava o video depois dos pontos selecionados/ começa a gravar depois de premida a letra 'p' e grava continuadamente até se premida a tecla ESC
             # cv2.imshow("Frame", self.frame)
@@ -409,6 +428,7 @@ class code():
         global ref_points
         a_point = np.array([[x, y]], dtype=np.float32)  # formata as coordenadas x,y(float32)
         self.ref_points = np.append(a_point, self.ref_points, axis=0)  # faz append das coordenadas ao array
+        self.ref_points_first_frame = np.append(a_point, self.ref_points, axis=0)
 
     def add_point_distance(self, x, y):
         global vector_distance_2points
@@ -533,8 +553,7 @@ class code():
         return area
 
     def draw_center_vectors(self, f1):
-        global frame, old_points, arrayArrowsCenter
-        global c_tmp, c_tmp1, c_tmp2, c_tmp3, c_tmp4, c_tmp5, c_tmp6, c_tmp7
+
         i = 0
         if self.old_points.size >= 2 and self.centroideAnterior is not None:
 
@@ -599,9 +618,27 @@ class code():
             # print(exit.count('N'))
             # print(hipote(x,y,x+grad_x,y+grad_y))   #  shows the distance between these two poin
 
+    def draw_reference_vectors(self,points, f1):
+            i = 0
+
+            for x, y in points:
+                cv2.circle(self.frame, (x, y), 1, (255, 255,0), -1)
+
+                if self.vector_points_ref.size == points.size:
+                    grad_x, grad_y = x - self.vector_points_ref[i][0], y - self.vector_points_ref[i][1]
+
+                    val_x = int(x + (f1 * grad_x))  # fator
+                    val_y = int(y + (f1 * grad_y))
+                    cv2.arrowedLine(self.frame, (x, y), (val_x, val_y), (0, 255, 255),1)
+
+                    if self.flag_hist == 1 and self.t == self.framesPerVector: #fazer hist
+                        pass
+
+                i += 1
+
+
+
     def draw_vectors_and_set_histogram(self, points_to_track, f1):
-        global frame, vector_points, arrayArrows
-        global tmp, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7
         i = 0
         for x, y in points_to_track:
             cv2.circle(self.frame, (x, y), 1, (0, 255,), -1)

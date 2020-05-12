@@ -98,38 +98,32 @@ class App:
                        -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
 
             if self.video.flag == 1:  # cria os arrays que vão ter as coordenadas dos pontos clicados
-                self.video.old_points = np.array([[event.x, event.y]],
-                                                 dtype=np.float32)  # array que vai ter as coordenadas dos pontos conforme o movimento
-                self.video.origin_points = np.array([[event.x, event.y]],
-                                                    dtype=np.float32)  # array que apenas vai conter as coordenadas dos pontos selecionados no inicio(útil para o loop)
+                self.video.old_points = np.array([[event.x, event.y]], dtype=np.float32)  # array que vai ter as coordenadas dos pontos conforme o movimento
+                self.video.origin_points = np.array([[event.x, event.y]], dtype=np.float32)  # array que apenas vai conter as coordenadas dos pontos selecionados no inicio(útil para o loop)
                 self.video.flag += 1
             else:
                 self.video.add_point(event.x, event.y)
 
         if self.video.flagDistance:
-            cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 0, 255),
-                       -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
+            cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 0, 255),-1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
             if self.video.flag1 == 1:
-                self.video.vector_distance_2points = np.array([[event.x, event.y]],
-                                                              dtype=np.float32)  # adiciona os 2 pontos selecionados para calcular a distancia
+                self.video.vector_distance_2points = np.array([[event.x, event.y]], dtype=np.float32)  # adiciona os 2 pontos selecionados para calcular a distancia
                 self.video.flag1 += 1
             else:
                 self.video.add_point_distance(event.x, event.y)
 
         if self.video.flagDistancePerpendicular:
-            cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 0, 255),
-                       -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
+            cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 0, 255),-1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
             if self.video.flag2 == 1:
-                self.video.vector_distance_perpendicular_2points = np.array([[event.x, event.y]],
-                                                                            dtype=np.float32)  # adiciona os 2 pontos selecionados para calcular a distancia
+                self.video.vector_distance_perpendicular_2points = np.array([[event.x, event.y]], dtype=np.float32)  # adiciona os 2 pontos selecionados para calcular a distancia
                 self.video.flag2 += 1
             else:
                 self.video.add_point_distance_perpendicular(event.x, event.y)
-        if self.video.flagRef:
-            cv2.circle(self.video.frame, (event.x, event.y), 2,(255,0,0),-1)
+        if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
+            cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 255, 0), -1)
             if self.video.flagRef == 1:
-                self.video.ref_points=np.array([[event.x, event.y]],
-                                                 dtype=np.float32)
+                self.video.ref_points = np.array([[event.x, event.y]], dtype=np.float32)
+                self.video.ref_points_first_frame = np.array([[]], dtype=np.float32)
                 self.video.flagRef += 1
             else:
                 self.video.addRef_point(event.x, event.y)
@@ -137,8 +131,7 @@ class App:
         if self.video.manualScaleFlag:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 255, 0), -1)
             if self.video.manualScaleFlag == 1:
-                self.video.vector_scale = np.array([[event.x, event.y]],
-                                                   dtype=np.float32)
+                self.video.vector_scale = np.array([[event.x, event.y]], dtype=np.float32)
                 self.video.manualScaleFlag += 1
             else:
                 self.video.add_point_scale_vector(event.x, event.y)
