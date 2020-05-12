@@ -65,7 +65,7 @@ class App:
         self.halfBt = Button(self.window, text="0.5x", width=3, command = self.getSpeed05x).grid(row=9, column=10,sticky=W, columnspan=2)
         
         # SCALE BAR
-        self.scaleBar = Scale(self.window, from_=0, to=1000, orient=HORIZONTAL, length=650)
+        self.scaleBar = Scale(self.window, from_=0, to=1000, orient=HORIZONTAL, length=650, command=self.onChange)
         self.scaleBar.grid(row=11, column=5, padx=40)
         self.plusBt = Button(self.window, text=">", font="helvetica 10 bold", command = self.increaseFrame).grid(row=11, column=5, sticky=E+S)
         self.minusBt = Button(self.window, text="<", font="helvetica 10 bold", command = self.decreaseFrame).grid(row=11, column=5, sticky=W+S)
@@ -87,6 +87,7 @@ class App:
         self.pauseButton.grid_remove()
         self.playButton.grid()
         self.video.pause = True
+        self.scaleBar.set(0)
 
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
         self.video.point_selected = True
@@ -152,7 +153,9 @@ class App:
             if self.video.manualScaleFlag and not self.video.okClicked:
                 mb.showinfo(title="Error!", message="Mark scale manually on 1cm!")
                 self.video.okClicked = True
-
+            if not self.video.pause:
+                self.scaleBar.set(self.video.cap.get(cv2.CAP_PROP_POS_FRAMES))
+            self.scaleBar.config(to=self.video.num_frames)
         self.window.after(self.delay, self.update)
 
     def getFileDir(self):
@@ -281,6 +284,21 @@ class App:
             self.playButton.grid()
             self.video.pause = True
 
+    def onChange(self, frame_num):
+        if self.opened and self.video.num_frames != 0:
+
+            if self.video.pause:
+                self.video.cap.set(cv2.CAP_PROP_POS_FRAMES, int(frame_num))
+                __, self.video.frame = self.video.cap.read()
+
+                self.video.frame = self.video.resize(self.video.frame)
+            else:
+                self.video.cap.set(cv2.CAP_PROP_POS_FRAMES, int(frame_num))
+                __, self.video.frame1 = self.video.cap.read()
+
+                self.video.frame1 = self.video.resize(self.video.frame1)
+        else:
+            self.scaleBar.set(0)
 
 if __name__ == '__main__':
     App()

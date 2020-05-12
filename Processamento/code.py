@@ -32,6 +32,7 @@ class code():
         self.frame = self.resize(self.frame)
         self.old_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  # passa a primeira frame para grayScale
         # definir/iniciar variáveis aqui
+        self.num_frames = 0
         self.vectors_factor = 2  # fator de visualização dos arrays
         self.q = 0
         self.dif = int(minDist)
@@ -69,6 +70,7 @@ class code():
         self.flag1 = 1
         self.flag2 = 1
         self.flagRef = 1
+        self.flag_c = 0
         self.width = (self.cap).get(cv2.CAP_PROP_FRAME_WIDTH)  # width do frame
         self.width = int(self.width * self.scale_percent / 100)
         self.height = (self.cap).get(cv2.CAP_PROP_FRAME_HEIGHT)  # height do frame
@@ -150,6 +152,14 @@ class code():
 
         if self.pause:  # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
 
+            cap2 = self.cap
+            if self.flag_c == 0:
+                while cap2.isOpened():
+                    ret, frame = cap2.read()
+                    if not ret:
+                        break
+                    self.num_frames += 1
+                self.flag_c = 1
             # cv2.imshow('Frame', self.frame)
 
             #tirar daqui ------------
