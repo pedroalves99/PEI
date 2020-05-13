@@ -136,6 +136,36 @@ class App:
             else:
                 self.video.add_point_scale_vector(event.x, event.y)
 
+    def delete_point(self, event):
+
+        if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
+            if self.video.old_points.size != 0:
+                x, y = self.video.old_points[0]
+                cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
+            print(self.video.old_points.size)
+            self.video.old_points = self.video.old_points[1:]
+            self.video.origin_points = self.video.origin_points[1:]
+        if self.video.flagDistance:
+            if self.video.vector_distance_2points != 0:
+                x, y = self.video.vector_distance_2points[0]
+                cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
+            self.video.vector_distance_2points = self.video.vector_distance_2points[1:]
+
+        if self.video.flagDistancePerpendicular:
+            if self.video.vector_distance_perpendicular_2points != 0:
+                x, y = self.video.vector_distance_perpendicular_2points[0]
+                cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
+            self.video.vector_distance__perpendicular_2points = self.video.vector_distance__perpendicular_2points[1:]
+
+        if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
+            if self.video.ref_points.size != 0:
+                x, y = self.video.ref_points[0]
+                cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
+            print(self.video.ref_points.size)
+            self.video.ref_points = self.video.ref_points[1:]
+            self.video.ref_points_first_frame = self.video.ref_points_first_frame[1:]
+        print("neeeew")
+        print(self.video.old_points)
 
     def update(self):  # função que serve de loop, chamada consoante o valor do self.delay em ms
         if self.filename is not None:  # and self.playing:
@@ -145,6 +175,7 @@ class App:
             self.photo = PIL.ImageTk.PhotoImage(image=self.resized)
             self.canvas_image = self.videoCanvas.create_image(0,0, image=self.photo, anchor=NW)
             self.videoCanvas.bind("<Button 1>", self.select_point)
+            self.videoCanvas.bind("<Button 3>", self.delete_point)
             self.video.execute()
 
             #print("flagScale")
