@@ -17,11 +17,11 @@ class code():
         self.scale_percent = 115  # percentagem de aumento do video - default 100%
         self.video_path = video_path
         # Lukas Kanade params
-        self.lk_params_dist = dict(winSize=(25, 25),
+        self.lk_params_dist = dict(winSize=(30, 30),
                                    # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
                                    maxLevel=4,
                                    criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
-        self.lk_params = dict(winSize=(25, 25),
+        self.lk_params = dict(winSize=(30, 30),
                               maxLevel=4,
                               criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
         self.cap = cv2.VideoCapture(
@@ -152,14 +152,14 @@ class code():
 
         if self.pause:  # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
 
-            cap2 = self.cap
-            if self.flag_c == 0:
-                while cap2.isOpened():
-                    ret, frame = cap2.read()
-                    if not ret:
-                        break
-                    self.num_frames += 1
-                self.flag_c = 1
+            # cap2 = self.cap
+            # if self.flag_c == 0:
+            #     while cap2.isOpened():
+            #         ret, frame = cap2.read()
+            #         if not ret:
+            #             break
+            #         self.num_frames += 1
+            #     self.flag_c = 1
             # tirar daqui ------------
 
             #tirar daqui ------------
@@ -307,7 +307,7 @@ class code():
                     self.ref_area = self.contourArea(self.newref_points)
                     self.ref_area = round((self.ref_area / self.conversao), 3)
 
-                    imageAreaRef = cv2.putText(self.frame, "area = " + str(self.area) + "mm2", self.org4, self.font,
+                    imageAreaRef = cv2.putText(self.frame, "area = " + str(self.ref_area) + "mm2", self.org4, self.font,
                                                self.fontScale, self.color4, self.thickness, cv2.LINE_AA)
 
                 if self.t == self.framesPerVector:  # reset de arrays p every 10 frames
