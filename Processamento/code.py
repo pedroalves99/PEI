@@ -123,7 +123,7 @@ class code():
         self.doScale = True
         self.okClicked = False
         self.q1 = 0
-
+        self.area_initial = 0
         # Mouse Function
 
     def execute(self):
@@ -292,9 +292,12 @@ class code():
                     imageArea = cv2.putText(self.frame, "area = " + str(self.area) + "mm2", self.org3, self.font,
                                             self.fontScale, self.color3, self.thickness, cv2.LINE_AA)
 
+                if self.q == 1:
+                    self.area_initial = self.area
+                    self.q += 1
                 if self.newref_points.size != 0:
-                    self.area = self.contourArea(self.newref_points)
-                    self.area = round((self.area / self.conversao), 3)
+                    self.ref_area = self.contourArea(self.newref_points)
+                    self.ref_area = round((self.ref_area / self.conversao), 3)
 
                     imageAreaRef = cv2.putText(self.frame, "area = " + str(self.area) + "mm2", self.org4, self.font,
                                                self.fontScale, self.color4, self.thickness, cv2.LINE_AA)
@@ -328,8 +331,7 @@ class code():
         # self.histogram(self.arrayMedidas, self.arrayArrows)
 
         # plt.show()
-
-    def showHistogram(self):
+    def calcHistogram(self):
         self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),
                              sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
         self.arrayx = np.true_divide(self.arrayMedidas, len(self.old_points))
@@ -337,13 +339,17 @@ class code():
         self.arrayMedidasCentroide = [sum(self.c_tmp), sum(self.c_tmp1), sum(self.c_tmp2), sum(self.c_tmp3),
                                       sum(self.c_tmp4), sum(self.c_tmp5), sum(self.c_tmp6), sum(self.c_tmp7)]
 
+    def showHistogram(self):
         self.histogram(self.arrayx, self.arrayArrows, self.arrayMedidasCentroide)
         plt.show()
 
-    def showReferenceHistogram(self):
+    def calcRefHistogram(self):
         self.arrayMedidasReference = [sum(self.r_tmp), sum(self.r_tmp1), sum(self.r_tmp2), sum(self.r_tmp3),
                                       sum(self.r_tmp4), sum(self.r_tmp5), sum(self.r_tmp6), sum(self.r_tmp7)]
         self.array2 = np.true_divide(self.arrayMedidasReference, len(self.ref_points))
+
+    def showReferenceHistogram(self):
+
         self.ReferenceHistogram(self.array2)
         plt.show()
 

@@ -5,6 +5,7 @@ import PIL.Image, PIL.ImageTk
 from code import code
 import cv2
 import numpy as np
+import excelWriter as ew
 from sys import platform
 
 # Default Values
@@ -211,16 +212,28 @@ class App:
         self.delay = 30
 
     def getHistogram(self):
-        code.showHistogram(self.video)
+        self.video.calcHistogram()
+        self.video.showHistogram()
 
     def getReferenceHistogram(self):
-        code.showReferenceHistogram(self.video)
+        self.video.calcRefHistogram()
+        self.video.showReferenceHistogram()
 
     def exportExcel(self, evaluationType):
         if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
             filename = fd.asksaveasfilename()
             if(filename[-5:] != ".xlsx" or filename[-4:] != ".xls"):
                 filename = filename+".xlsx"
+
+                self.video.calcHistogram()
+                if self.video.flagRef:
+                    self.video.calcRefHistogram()
+                else:
+                    print("not ref")
+                    self.video.array2 = []
+
+                ew.create_excel(filename)
+                ew.add_data(filename, self.filename, evaluationType, self.video.arrayx, self.video.arrayMedidasCentroide, self.video.array2, self.video.area_initial, self.video.area, 0, 0)
             if self.opened:
                 mb.showinfo(title="Done!", message="Exported successfully!")
             else:
@@ -234,7 +247,11 @@ class App:
     def addExcel(self, evaluationType):
         if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
             # FAZER AS COISAS AQUI
-            self.filename = fd.askopenfilename(filetypes=[("Excel sheet", ".xls .xlsx")])
+            filename = fd.askopenfilename(filetypes=[("Excel sheet", ".xls .xlsx")])
+            self.video.calcHistogram()
+            if self.video.flagRef:
+                self.video.calcRefHistogram()
+            ew.add_data(filename, self.filename, evaluationType, self.video.arrayx, self.video.arrayMedidasCentroide,self.video.array2, self.video.area_initial, self.video.area, 0, 0)
             mb.showinfo(title="Done!", message="Exported successfully!")
         else:
             mb.showinfo(title="Done!", message="Please fill in the evaluation Type!")
