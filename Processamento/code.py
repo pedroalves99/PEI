@@ -116,6 +116,7 @@ class code():
         self.flag_hist = 1
         self.pause = True
         self.center = None
+        self.centerRef = None
         self.centroideAnterior = None
         self.vector_scale = np.array([[]],dtype=np.float32)  # variavel que contem os 2 pontos para calcular a escala
         self.vector_points_ref = np.array([[]],dtype=np.float32)
@@ -209,7 +210,9 @@ class code():
                 self.ref_points = self.ref_points_first_frame
                 self.flag_hist = 0  # já acabou o ciclo não desenha mais histograma
                 self.center = None
+                self.centerRef = None
                 self.centroideAnterior = None
+                self.centroideAnteriorRef = None
 
             else:
                 self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
@@ -244,16 +247,20 @@ class code():
                                                         self.vectors_factor)  # atualiza as variaveis para o histograma e desenha os vetores
 
                     self.center = self.centroide(self.new_points)
+                    self.centerRef = self.centroideRef(self.newref_points)
 
                     self.draw_center_vectors(self.vectors_factor)  # fazer o hist
 
                     self.old_points = self.new_points  # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)
 
-                    # print("Centroide")
-                    # print(self.center)
+                    print("Centroide")
+                    print(self.center)
+                    print("CentroideREF")
+                    print(self.centerRef)
 
                     cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
+                    cv2.circle(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), 2, (255, 255,0), -1)
 
                     self.frame = cv2.add(self.frame, self.spline)  # fazer o overlay do contour na main frame
 
@@ -313,6 +320,7 @@ class code():
                 if self.t == self.framesPerVector:  # reset de arrays p every 10 frames
                     self.vector_points = self.old_points
                     self.centroideAnterior = self.center
+                    self.centroideAnteriorRef = self.centerRef
                     self.vector_points_ref = self.ref_points
                     self.t = 0  # reset da variavel
 
@@ -580,6 +588,13 @@ class code():
                            [len(points)] * 2))  # centro cartesiano dos pontos
 
         return center
+
+    def centroideRef(self, points):
+        centerRef = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
+                           [len(points)] * 2))  # centro cartesiano dos pontos
+
+        return centerRef
+
 
     def draw_Refspline(self, frame_spline, points):
         center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
