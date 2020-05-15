@@ -135,9 +135,9 @@ class code():
                 try:
                     self.conversao = self.findScale(self.frame)
                 except IndexError:
-                    print("can't find scale")
-                    print("vector scale")
-                    print(self.vector_scale)
+                    #print("can't find scale")
+                    #print("vector scale")
+                    #print(self.vector_scale)
                     self.manualScaleFlag = True
             elif self.vector_scale.size > 2:
                 self.conversao = self.findScaleManually(self.vector_scale)
@@ -176,16 +176,16 @@ class code():
                 self.frame = self.resize(self.frame)
 
             if not check:  # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
-                print(self.counts)
+                #print(self.counts)
                 # self.counts = defaultdict(int)
-                print("o")
-                print(self.counts)
+                #print("o")
+                #print(self.counts)
                 self.doScale = True
                 # self.tmp7 = []
 
                 cap1 = cv2.VideoCapture(self.video_path)  # abrir nova captura
                 if not cap1.isOpened():
-                    print("Erro")
+                    #print("Erro")
                     exit()
                 _, self.frame = cap1.read()  # le o frame anterior
                 self.old_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  # converte a frame para gray
@@ -236,7 +236,7 @@ class code():
                         self.refTrack_points = self.resample_points(self.Refspline, self.dif)
                         self.ref_points = self.refTrack_points
                         self.vector_points_ref = self.refTrack_points
-                        print("so uma vez")
+                        #print("so uma vez")
                         self.q1 = 1
                 #print("points" + str (self.vector_points_ref))
                 if self.old_points.size != 0:  # 1st contour
@@ -254,10 +254,10 @@ class code():
                     self.old_points = self.new_points  # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)
 
-                    print("Centroide")
-                    print(self.center)
-                    print("CentroideREF")
-                    print(self.centerRef)
+                    #print("Centroide")
+                    #print(self.center)
+                    #print("CentroideREF")
+                    #print(self.centerRef)
 
                     cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
                     cv2.circle(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), 2, (255, 255,0), -1)
@@ -443,7 +443,7 @@ class code():
         # Create names
         plt.xticks(y_pos2, bars2)
         leg = ax2.legend();
-        print(self.arrayMedidasCentroide)
+        #print(self.arrayMedidasCentroide)
         plt.subplots_adjust(left=0.17)
         return histograma, histograma1, histograma2
 

@@ -92,8 +92,8 @@ class App:
 
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
         self.video.point_selected = True
-        print("flagDistance")
-        print(self.video.flagDistance)
+        #print("flagDistance")
+        #print(self.video.flagDistance)
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 255, 0),
                        -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
@@ -143,7 +143,7 @@ class App:
             if self.video.old_points.size != 0:
                 x, y = self.video.old_points[0]
                 cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
-            print(self.video.old_points.size)
+            #print(self.video.old_points.size)
             self.video.old_points = self.video.old_points[1:]
             self.video.origin_points = self.video.origin_points[1:]
         if self.video.flagDistance:
@@ -162,11 +162,11 @@ class App:
             if self.video.ref_points.size != 0:
                 x, y = self.video.ref_points[0]
                 cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
-            print(self.video.ref_points.size)
+            #print(self.video.ref_points.size)
             self.video.ref_points = self.video.ref_points[1:]
             self.video.ref_points_first_frame = self.video.ref_points_first_frame[1:]
-        print("neeeew")
-        print(self.video.old_points)
+        #print("neeeew")
+        #print(self.video.old_points)
 
     def update(self):  # função que serve de loop, chamada consoante o valor do self.delay em ms
         if self.filename is not None:  # and self.playing:
@@ -229,7 +229,7 @@ class App:
                 if self.video.flagRef:
                     self.video.calcRefHistogram()
                 else:
-                    print("not ref")
+                    #print("not ref")
                     self.video.array2 = []
 
                 ew.create_excel(filename)
@@ -266,13 +266,13 @@ class App:
 
     def distance(self):
         self.video.flagDistance = True
-        print("flag distance")
-        print(self.video.flagDistance)
+        #print("flag distance")
+        #print(self.video.flagDistance)
 
     def distancePerpendicular(self):
         self.video.flagDistancePerpendicular = True
-        print("flag distance perpendicular")
-        print(self.video.flagDistancePerpendicular)
+        #print("flag distance perpendicular")
+        #print(self.video.flagDistancePerpendicular)
 
     def ref(self):
         if self.video.flagRef:
