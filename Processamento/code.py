@@ -125,6 +125,16 @@ class code():
         self.okClicked = False
         self.q1 = 0
         self.area_initial = 0
+        self.distanceBetweenCentroideX = 0
+        self.distanceBetweenCentroideY = 0
+        self.distanceBetweenCentroideRefX = 0
+        self.distanceBetweenCentroideRefY = 0
+        self.flagDistanceCoordenadasCentroide = False
+        self.stopDistanceCoordenadasCentroide = False
+        self.arraycentroideX = []
+        self.arraycentroideY = []
+        self.arraycentroideRefX = []
+        self.arraycentroideRefY = []
         # Mouse Function
 
     def execute(self):
@@ -135,9 +145,6 @@ class code():
                 try:
                     self.conversao = self.findScale(self.frame)
                 except IndexError:
-                    #print("can't find scale")
-                    #print("vector scale")
-                    #print(self.vector_scale)
                     self.manualScaleFlag = True
             elif self.vector_scale.size > 2:
                 self.conversao = self.findScaleManually(self.vector_scale)
@@ -182,6 +189,7 @@ class code():
                 #print(self.counts)
                 self.doScale = True
                 # self.tmp7 = []
+                self.stopDistanceCoordenadasCentroide = True
 
                 cap1 = cv2.VideoCapture(self.video_path)  # abrir nova captura
                 if not cap1.isOpened():
@@ -213,6 +221,7 @@ class code():
                 self.centerRef = None
                 self.centroideAnterior = None
                 self.centroideAnteriorRef = None
+
 
             else:
                 self.gray_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)
@@ -246,6 +255,7 @@ class code():
                     self.draw_vectors_and_set_histogram(self.new_points,
                                                         self.vectors_factor)  # atualiza as variaveis para o histograma e desenha os vetores
 
+
                     self.center = self.centroide(self.new_points)
                     self.centerRef = self.centroideRef(self.newref_points)
 
@@ -254,13 +264,21 @@ class code():
                     self.old_points = self.new_points  # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)
 
-                    #print("Centroide")
-                    #print(self.center)
-                    #print("CentroideREF")
-                    #print(self.centerRef)
-
                     cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
                     cv2.circle(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), 2, (255, 255,0), -1)
+
+                    if self.flagDistanceCoordenadasCentroide and not self.stopDistanceCoordenadasCentroide: #para calcular o grafico x,y dos centroides
+
+                        self.distanceBetweenCentroideX = self.centroideAnterior[0] - self.center[0]
+                        self.arraycentroideX.append(round(self.distanceBetweenCentroideX,3))
+                        self.distanceBetweenCentroideY = self.centroideAnterior[1] - self.center[1]
+                        self.arraycentroideY.append(round(self.distanceBetweenCentroideY,3))
+
+                        self.distanceBetweenCentroideRefX = self.centroideAnteriorRef[0] - self.centerRef[0]
+                        self.arraycentroideRefX.append(round(self.distanceBetweenCentroideRefX,3))
+                        self.distanceBetweenCentroideRefY = self.centroideAnteriorRef[1] - self.centerRef[1]
+                        self.arraycentroideRefY.append(round(self.distanceBetweenCentroideRefY,3))
+
 
                     self.frame = cv2.add(self.frame, self.spline)  # fazer o overlay do contour na main frame
 
@@ -319,6 +337,7 @@ class code():
 
                 if self.t == self.framesPerVector:  # reset de arrays p every 10 frames
                     self.vector_points = self.old_points
+                    self.flagDistanceCoordenadasCentroide = True
                     self.centroideAnterior = self.center
                     self.centroideAnteriorRef = self.centerRef
                     self.vector_points_ref = self.ref_points
