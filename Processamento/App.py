@@ -56,7 +56,8 @@ class App:
         self.resetPointsBt = Button(self.window, text="Reset All", width=13, command=self.delAll).grid(row=2,column=10, columnspan=2)
         self.distance1 = Button(self.window, text="Distance 1", width=13, command=self.distance).grid(row=3, column=10, columnspan=2)
         self.distance2 = Button(self.window, text="Distance 2", width=13, command=self.distancePerpendicular).grid(row=4, column=10, columnspan=2)
-        self.secContour = Button(self.window, text="Reference Contour", width=13, command=self.ref).grid(row=5, column=10, columnspan=2)
+        self.secContour = Button(self.window, text="Reference Contour", width=13, command=self.ref)
+        self.secContour.grid(row=5, column=10, columnspan=2)        
 
         # BOTTOM RIGHT BUTTONS
         self.preferencesBt = Button(self.window, text="Preferences", width=13, command=self.optionsWindow).grid(row=7, column=10, columnspan=2)
@@ -169,6 +170,12 @@ class App:
         #print(self.video.old_points)
 
     def update(self):  # função que serve de loop, chamada consoante o valor do self.delay em ms
+        if(self.opened):
+            if(self.video.flagRef):
+                self.secContour.config(relief="sunken")
+            else:
+                self.secContour.config(relief="raised")
+        
         if self.filename is not None:  # and self.playing:
             self.frame = cv2.cvtColor(self.video.frame, cv2.COLOR_BGR2RGB)  # Rgb to Bgr
             self.resized = PIL.Image.fromarray(
@@ -198,7 +205,7 @@ class App:
         self.videoCanvas = Canvas(self.window, width=self.video.width, height=self.video.height)
         self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10, pady=(15,0))
         self.videoCanvas.configure(bg='grey')
-        self.filenameLb = Label(self.window, text=self.filename, font="helvetica 9 bold").grid(row=14, column=0, sticky=W, padx=5)
+        self.filenameLb = Label(self.window, text=self.filename, font="helvetica 9 bold").grid(row=15, column=0, columnspan=30, sticky=W+S, padx=5)
         self.opened = True
 
 
