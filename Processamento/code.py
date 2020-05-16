@@ -131,6 +131,7 @@ class code():
         self.distanceBetweenCentroideRefY = 0
         self.flagDistanceCoordenadasCentroide = False
         self.stopDistanceCoordenadasCentroide = False
+        self.stopCountFrames = False
         self.arraycentroideX = []
         self.arraycentroideY = []
         self.arraycentroideRefX = []
@@ -175,6 +176,9 @@ class code():
             if len(self.vector_scale) == 2:
                 self.manualScaleFlag = False
         else:
+            if not self.stopCountFrames:
+                self.num_frames +=1
+                #print(self.num_frames)
 
             check, self.frame = self.cap.read()  # le frame a frame
             self.t += 1
@@ -190,7 +194,7 @@ class code():
                 self.doScale = True
                 # self.tmp7 = []
                 self.stopDistanceCoordenadasCentroide = True
-
+                self.stopCountFrames = True
                 cap1 = cv2.VideoCapture(self.video_path)  # abrir nova captura
                 if not cap1.isOpened():
                     #print("Erro")
@@ -365,7 +369,17 @@ class code():
 
         # self.histogram(self.arrayMedidas, self.arrayArrows)
 
-        # plt.show()
+
+    def showGraph(self):
+        print("X")
+        #print(self.arraycentroideX)
+        self.linegraphic(self.arraycentroideX, self.arraycentroideY, self.arraycentroideRefX, self.arraycentroideRefY)
+        print("ola")
+        print(self.arraycentroideRefX)
+        plt.show()
+
+
+
     def calcHistogram(self):
         self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),
                              sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
@@ -465,6 +479,24 @@ class code():
         #print(self.arrayMedidasCentroide)
         plt.subplots_adjust(left=0.17)
         return histograma, histograma1, histograma2
+
+
+    def linegraphic(self, array1, array2, array3, array4):
+
+        #print("qqqq")
+        x = np.linspace(0, self.num_frames, len(array1))
+        #print("x")
+       #print(x)
+
+        plt.plot(x, array1, label='x1')  # Plot some data on the (implicit) axes.
+        plt.plot(x, array2, label='y1')  # etc.
+        plt.plot(x, array3, label='xRef')
+        plt.plot(x, array4, label='yRef')
+        plt.xlabel('Frames')
+        plt.ylabel('Distance (px)')
+        plt.title("Center of Mass Movement")
+        plt.legend()
+        #print("xxxx")
 
     def hipote(self, x1, y1, x2, y2):  # teorema de pitagoras
         return math.sqrt(math.pow(x2 - x1, 2) + math.pow(y2 - y1, 2))

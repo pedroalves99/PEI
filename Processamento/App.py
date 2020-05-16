@@ -24,6 +24,7 @@ class App:
         # TOP LEFT BUTTONS
         self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 300))
         self.referenceHistogram = Button(self.window, text="Reference Histogram", width=15, height=1, command = self.getReferenceHistogram).grid(row=0, column=0, pady=2)
+        self.CenterOfMass = Button(self.window, text="Center of Mass", width=10, height=1, command=self.getCenterOfMass).grid(row=1, column=0, pady=2, padx=(5, 300))
 
         # BOTTOM LEFT BUTTONS
         self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W+N, padx=(5,0))
@@ -225,6 +226,10 @@ class App:
     def getReferenceHistogram(self):
         self.video.calcRefHistogram()
         self.video.showReferenceHistogram()
+
+    def getCenterOfMass(self):
+        self.video.showGraph()
+        print("aqui")
 
     def exportExcel(self, evaluationType):
         if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
