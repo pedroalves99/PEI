@@ -70,6 +70,7 @@ class code():
         self.flag1 = 1
         self.flag2 = 1
         self.flagRef = 1
+        self.hasRef =False
         self.flag_c = 0
         self.width = (self.cap).get(cv2.CAP_PROP_FRAME_WIDTH)  # width do frame
         self.width = int(self.width * self.scale_percent / 100)
@@ -91,6 +92,8 @@ class code():
         self.new_points = np.array([[]], dtype=np.float32)
         self.origin_points = np.array([[]], dtype=np.float32)
         self.ref_points = np.array([[]], dtype=np.float32)
+        self.more_points = np.array([], dtype=np.int32)
+        self.more_Refpoints = np.array([], dtype=np.int32)
         self.newref_points = np.array([[]], dtype=np.float32)
         self.flagDistance = False
         self.flagDistancePerpendicular = False
@@ -246,9 +249,9 @@ class code():
                     self.frame = cv2.add(self.frame, self.Refspline)
 
                     if self.q1 == 0:
-                        self.refTrack_points = self.resample_points(self.Refspline, self.dif)
-                        self.ref_points = self.refTrack_points
-                        self.vector_points_ref = self.refTrack_points
+                        #self.refTrack_points = self.resample_points(self.Refspline, self.dif)
+                        #self.ref_points = self.refTrack_points
+                        #self.vector_points_ref = self.refTrack_points
                         #print("so uma vez")
                         self.q1 = 1
                 #print("points" + str (self.vector_points_ref))
@@ -261,15 +264,16 @@ class code():
 
 
                     self.center = self.centroide(self.new_points)
-                    self.centerRef = self.centroideRef(self.newref_points)
-
+                    if self.hasRef:
+                        self.centerRef = self.centroide(self.newref_points)
+                        cv2.circle(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), 2, (255, 255, 0), -1)
                     self.draw_center_vectors(self.vectors_factor)  # fazer o hist
 
                     self.old_points = self.new_points  # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)
 
                     cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
-                    cv2.circle(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), 2, (255, 255,0), -1)
+
 
                     if self.flagDistanceCoordenadasCentroide and not self.stopDistanceCoordenadasCentroide: #para calcular o grafico x,y dos centroides
 
@@ -277,20 +281,20 @@ class code():
                         self.arraycentroideX.append(round(self.distanceBetweenCentroideX,3))
                         self.distanceBetweenCentroideY = self.centroideAnterior[1] - self.center[1]
                         self.arraycentroideY.append(round(self.distanceBetweenCentroideY,3))
-
-                        self.distanceBetweenCentroideRefX = self.centroideAnteriorRef[0] - self.centerRef[0]
-                        self.arraycentroideRefX.append(round(self.distanceBetweenCentroideRefX,3))
-                        self.distanceBetweenCentroideRefY = self.centroideAnteriorRef[1] - self.centerRef[1]
-                        self.arraycentroideRefY.append(round(self.distanceBetweenCentroideRefY,3))
+                        if self.hasRef:
+                            self.distanceBetweenCentroideRefX = self.centroideAnteriorRef[0] - self.centerRef[0]
+                            self.arraycentroideRefX.append(round(self.distanceBetweenCentroideRefX,3))
+                            self.distanceBetweenCentroideRefY = self.centroideAnteriorRef[1] - self.centerRef[1]
+                            self.arraycentroideRefY.append(round(self.distanceBetweenCentroideRefY,3))
 
 
                     self.frame = cv2.add(self.frame, self.spline)  # fazer o overlay do contour na main frame
 
                     if self.q == 0:  # só faz o resampling 1 vez
                         if self.old_points.size != 0:
-                            self.track_points = self.resample_points(self.spline, self.dif)
-                            self.old_points = self.track_points
-                            self.vector_points = self.track_points
+                            #self.track_points = self.resample_points(self.spline, self.dif)
+                            #self.old_points = self.track_points
+                            #self.vector_points = self.track_points
                             self.q = 1
 
 
@@ -621,53 +625,37 @@ class code():
         return dist
 
     def draw_spline(self, frame_spline, points):
-        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
-                           [len(points)] * 2))  # centro cartesiano dos pontos
 
-        sortedp = sorted(points,  # ordenar array em  orientação horária
-                         key=lambda coord: (-135 - math.degrees(
-                             math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
-
-        poly = cv2.approxPolyDP(np.array([sortedp], dtype=np.int32), 1, True)  # aproximação curvilinea do contorno
+        poly = cv2.approxPolyDP(np.array([points], dtype=np.int32), 1, True)  # aproximação curvilinea do contorno
 
         contour = cv2.drawContours(frame_spline, [poly], 0, (0, 255, 0), 1)  # desenho do contorno na "frame "contour
 
         return contour
 
     def centroide(self, points):
-        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
-                           [len(points)] * 2))  # centro cartesiano dos pontos
-
+        mom = cv2.moments(points)
+        center = (mom["m10"]/mom["m00"], mom["m01"]/mom["m00"])
         return center
 
-    def centroideRef(self, points):
-        centerRef = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
-                           [len(points)] * 2))  # centro cartesiano dos pontos
 
-        return centerRef
 
 
     def draw_Refspline(self, frame_spline, points):
-        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
-                           [len(points)] * 2))  # centro cartesiano dos pontos
 
-        sortedp = sorted(points,  # ordenar array em  orientação horária
-                         key=lambda coord: (-135 - math.degrees(
-                             math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
 
-        poly = cv2.approxPolyDP(np.array([sortedp], dtype=np.int32), 1, True)  # aproximação curvilinea do contorno
+
+        poly = cv2.approxPolyDP(np.array([points], dtype=np.int32), 1, True)  # aproximação curvilinea do contorno
 
         contour = cv2.drawContours(frame_spline, [poly], 0, (255, 255, 0), 1)  # desenho do contorno na "frame "contour
 
         return contour
 
     def contourArea(self, points):
-        center = tuple(map(operator.truediv, reduce(lambda x, y: map(operator.add, x, y), points),
-                           [len(points)] * 2))  # centro cartesiano dos pontos
+
 
         sortedp = sorted(points,  # ordenar array em  orientação horária
                          key=lambda coord: (-135 - math.degrees(
-                             math.atan2(*tuple(map(operator.sub, coord, center))[::-1]))) % 360)
+                             math.atan2(*tuple(map(operator.sub, coord, self.centroide(points)))[::-1]))) % 360)
 
         poly = cv2.approxPolyDP(np.array([sortedp], dtype=np.int32), 1, True)  # aproximação curvilinea do contorno
         area = cv2.contourArea(poly)
@@ -920,7 +908,37 @@ class code():
                     past_elem = z
 
         return track_points
+    def interp_point(self,point1, point2):
+        x1, y1 = point1
+        x2, y2 = point2
+        dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
+        n = int(dist/self.dif)
+        k = (x2-x1)*self.dif/dist
+        m = (y2-y1)/(x2-x1)
+        self.more_points = np.append(n, self.more_points)
 
+        for i in range(1, n):
+            xi = x1+k
+            yi = y1 + k*m
+            self.add_point(xi,yi)
+            x1 = xi
+            y1 = yi
+
+    def interpRef_point(self,point1, point2):
+        x1, y1 = point1
+        x2, y2 = point2
+        dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
+        n = int(dist/self.dif)
+        k = (x2-x1)*self.dif/dist
+        m = (y2-y1)/(x2-x1)
+
+        self.more_Refpoints = np.append(n, self.more_points)
+        for i in range(1, n):
+            xi = x1+k
+            yi = y1 + k*m
+            self.addRef_point(xi,yi)
+            x1 = xi
+            y1 = yi
 
 if __name__ == '__main__':
     code("QUARTA01.wmv").execute()

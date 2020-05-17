@@ -97,15 +97,20 @@ class App:
         #print("flagDistance")
         #print(self.video.flagDistance)
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
+            print(self.video.old_points)
+            print("------>",self.video.old_points.size)
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 255, 0),
                        -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
 
             if self.video.flag == 1:  # cria os arrays que vão ter as coordenadas dos pontos clicados
                 self.video.old_points = np.array([[event.x, event.y]], dtype=np.float32)  # array que vai ter as coordenadas dos pontos conforme o movimento
                 self.video.origin_points = np.array([[event.x, event.y]], dtype=np.float32)  # array que apenas vai conter as coordenadas dos pontos selecionados no inicio(útil para o loop)
+                self.video.more_points = np.array([0],dtype=np.int32)
                 self.video.flag += 1
             else:
-                self.video.add_point(event.x, event.y)
+                p = np.array([event.x, event.y], dtype=np.float32)
+                self.video.interp_point(self.video.old_points[0], p)
+
 
         if self.video.flagDistance:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 0, 255),-1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
@@ -124,12 +129,16 @@ class App:
                 self.video.add_point_distance_perpendicular(event.x, event.y)
         if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 255, 0), -1)
+            self.hasRef = True
             if self.video.flagRef == 1:
                 self.video.ref_points = np.array([[event.x, event.y]], dtype=np.float32)
                 self.video.ref_points_first_frame = np.array([[]], dtype=np.float32)
+                self.video.more_Refpoints = np.array([0], dtype=np.int32)
                 self.video.flagRef += 1
             else:
-                self.video.addRef_point(event.x, event.y)
+                p = np.array([event.x, event.y], dtype=np.float32)
+                self.video.interpRef_point(self.video.ref_points[0], p)
+
 
         if self.video.manualScaleFlag:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 255, 0), -1)
@@ -142,11 +151,16 @@ class App:
     def delete_point(self, event):
 
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
+
             if self.video.old_points.size != 0:
                 x, y = self.video.old_points[0]
                 cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
             #print(self.video.old_points.size)
-            self.video.old_points = self.video.old_points[1:]
+
+            print(self.video.more_points[0])
+            self.video.old_points = self.video.old_points[self.video.more_points[0]:]
+            self.video.origin_points = self.video.origin_points[self.video.more_points[0]:]
+            self.video.more_points = self.video.more_points[1:]
             self.video.origin_points = self.video.origin_points[1:]
         if self.video.flagDistance:
             if self.video.vector_distance_2points != 0:
@@ -166,7 +180,7 @@ class App:
                 cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
             #print(self.video.ref_points.size)
             self.video.ref_points = self.video.ref_points[1:]
-            self.video.ref_points_first_frame = self.video.ref_points_first_frame[1:]
+            self.video.ref_points_first_frame = self.video.ref_points_first_frame[self.video.more_Refpoints[0]:]
         #print("neeeew")
         #print(self.video.old_points)
 
@@ -193,9 +207,9 @@ class App:
             if self.video.manualScaleFlag and not self.video.okClicked:
                 mb.showinfo(title="Error!", message="Mark scale manually on 1cm!")
                 self.video.okClicked = True
-            if not self.video.pause:
-                self.scaleBar.set(self.video.cap.get(cv2.CAP_PROP_POS_FRAMES))
-            self.scaleBar.config(to=self.video.num_frames)
+            #if not self.video.pause:
+            #    self.scaleBar.set(self.video.cap.get(cv2.CAP_PROP_POS_FRAMES))
+            #self.scaleBar.config(to=self.video.num_frames)
         self.window.after(self.delay, self.update)
 
     def getFileDir(self):
@@ -339,6 +353,7 @@ class App:
             self.playButton.grid_remove()
             self.pauseButton.grid()
             self.video.pause = False
+            self.video.interp_point(self.video.old_points[0], self.video.old_points[-1])
         else:
             self.pauseButton.grid_remove()
             self.playButton.grid()
