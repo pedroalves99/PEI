@@ -99,8 +99,7 @@ class App:
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
             print(self.video.old_points)
             print("------>",self.video.old_points.size)
-            cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 255, 0),
-                       -1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
+           # sempre que é clicado na imagem, faz um circulo a volta das coord
 
             if self.video.flag == 1:  # cria os arrays que vão ter as coordenadas dos pontos clicados
                 self.video.old_points = np.array([[event.x, event.y]], dtype=np.float32)  # array que vai ter as coordenadas dos pontos conforme o movimento
@@ -110,7 +109,9 @@ class App:
             else:
                 p = np.array([event.x, event.y], dtype=np.float32)
                 self.video.interp_point(self.video.old_points[0], p)
-
+            x,y = self.video.old_points[0]
+            cv2.circle(self.video.frame,(x,y) , 2, (0, 255, 0),
+                       -1)
 
         if self.video.flagDistance:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 0, 255),-1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
@@ -158,8 +159,8 @@ class App:
             #print(self.video.old_points.size)
 
             print(self.video.more_points[0])
-            self.video.old_points = self.video.old_points[self.video.more_points[0]:]
-            self.video.origin_points = self.video.origin_points[self.video.more_points[0]:]
+            self.video.old_points = self.video.old_points[self.video.more_points[0]-1:]
+            self.video.origin_points = self.video.origin_points[self.video.more_points[0]-1:]
             self.video.more_points = self.video.more_points[1:]
             self.video.origin_points = self.video.origin_points[1:]
         if self.video.flagDistance:
@@ -354,7 +355,8 @@ class App:
             self.pauseButton.grid()
             self.video.pause = False
             self.video.interp_point(self.video.old_points[0], self.video.old_points[-1])
-            self.video.interpRef_point(self.video.ref_points[0], self.video.ref_points[-1])
+            if self.video.hasRef:
+                self.video.interpRef_point(self.video.ref_points[0], self.video.ref_points[-1])
         else:
             self.pauseButton.grid_remove()
             self.playButton.grid()
