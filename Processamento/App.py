@@ -354,6 +354,7 @@ class App:
             self.pauseButton.grid()
             self.video.pause = False
             self.video.interp_point(self.video.old_points[0], self.video.old_points[-1])
+            self.video.interpRef_point(self.video.ref_points[0], self.video.ref_points[-1])
         else:
             self.pauseButton.grid_remove()
             self.playButton.grid()
