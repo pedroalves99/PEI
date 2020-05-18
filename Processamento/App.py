@@ -130,7 +130,7 @@ class App:
                 self.video.add_point_distance_perpendicular(event.x, event.y)
         if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 255, 0), -1)
-            self.hasRef = True
+            self.video.hasRef = True
             if self.video.flagRef == 1:
                 self.video.ref_points = np.array([[event.x, event.y]], dtype=np.float32)
                 self.video.ref_points_first_frame = np.array([[]], dtype=np.float32)

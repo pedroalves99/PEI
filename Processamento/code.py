@@ -275,17 +275,17 @@ class code():
                     cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
 
 
-                    if self.flagDistanceCoordenadasCentroide and not self.stopDistanceCoordenadasCentroide: #para calcular o grafico x,y dos centroides
+                    if self.flagDistanceCoordenadasCentroide and not self.stopDistanceCoordenadasCentroide and self.hasRef: #para calcular o grafico x,y dos centroides
 
                         self.distanceBetweenCentroideX = self.centroideAnterior[0] - self.center[0]
                         self.arraycentroideX.append(round(self.distanceBetweenCentroideX,3))
                         self.distanceBetweenCentroideY = self.centroideAnterior[1] - self.center[1]
                         self.arraycentroideY.append(round(self.distanceBetweenCentroideY,3))
-                        if self.hasRef:
-                            self.distanceBetweenCentroideRefX = self.centroideAnteriorRef[0] - self.centerRef[0]
-                            self.arraycentroideRefX.append(round(self.distanceBetweenCentroideRefX,3))
-                            self.distanceBetweenCentroideRefY = self.centroideAnteriorRef[1] - self.centerRef[1]
-                            self.arraycentroideRefY.append(round(self.distanceBetweenCentroideRefY,3))
+
+                        self.distanceBetweenCentroideRefX = self.centroideAnteriorRef[0] - self.centerRef[0]
+                        self.arraycentroideRefX.append(round(self.distanceBetweenCentroideRefX,3))
+                        self.distanceBetweenCentroideRefY = self.centroideAnteriorRef[1] - self.centerRef[1]
+                        self.arraycentroideRefY.append(round(self.distanceBetweenCentroideRefY,3))
 
 
                     self.frame = cv2.add(self.frame, self.spline)  # fazer o overlay do contour na main frame
