@@ -943,7 +943,7 @@ class code():
             else:
                 x2, y2 = points[p + 1]
             dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-            if(dist>self.diff):
+            if(dist>self.dif):
                 n = int(dist / self.dif)
                 k = (x2 - x1) * self.dif / dist
                 m = (y2 - y1) / (x2 - x1)

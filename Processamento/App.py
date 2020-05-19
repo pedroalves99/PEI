@@ -153,7 +153,7 @@ class App:
             else:
                 self.click_Refpoints.clear
                 self.video.hasRef = False
-                self.video.flagRef = False
+                self.video.flagRef = 1
         if self.video.flagDistance:
             if self.video.vector_distance_2points != 0:
                 x, y = self.video.vector_distance_2points[0]
