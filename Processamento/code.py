@@ -906,41 +906,53 @@ class code():
                     add = np.array([z], dtype=np.float32)
                     track_points = np.append(add, track_points, axis=0)
                     past_elem = z
-
         return track_points
-    def interp_point(self,point1, point2):
-        x1, y1 = point1
-        x2, y2 = point2
-        dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
-        n = int(dist/self.dif)
-        k = (x2-x1)*self.dif/dist
-        m = (y2-y1)/(x2-x1)
-        self.more_points = np.append(n, self.more_points)
 
-        for i in range(1, n):
-            xi = x1+k
-            yi = y1 + k*m
-            self.add_point(xi,yi)
-            x1 = xi
-            y1 = yi
+    def interp_point(self,points):
+        x,y = points[0]
+        self.old_points = np.array([[x, y]], dtype=np.float32)
+        self.origin_points = np.array([[x, y]], dtype=np.float32)
 
-        self.add_point(x2,y2)
-    def interpRef_point(self,point1, point2):
-        x1, y1 = point1
-        x2, y2 = point2
-        dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
-        n = int(dist/self.dif)
-        k = (x2-x1)*self.dif/dist
-        m = (y2-y1)/(x2-x1)
+        for p in range(0,len(points)):
+            x1, y1 = points[p]
+            if (p == len(points)-1):
+                x2, y2 = points[0]  # para conectar o primeiro com o ultimo
+            else:
+                x2, y2 = points[p + 1]
+            dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
+            n = int(dist/self.dif)
+            k = (x2-x1)*self.dif/dist
+            m = (y2-y1)/(x2-x1)
 
-        self.more_Refpoints = np.append(n, self.more_Refpoints)
-        for i in range(1, n):
-            xi = x1+k
-            yi = y1 + k*m
-            self.addRef_point(xi,yi)
-            x1 = xi
-            y1 = yi
+            for i in range(1, n):
+                xi = x1+k
+                yi = y1 + k*m
+                self.add_point(xi,yi)
+                x1 = xi
+                y1 = yi
 
-        self.addRef_point(x2, y2)
+    def interpRef_point(self, points):
+        x, y = points[0]
+        self.ref_points = np.array([[x, y]], dtype=np.float32)
+        self.ref_points_first_frame = np.array([[x, y]], dtype=np.float32)
+
+        for p in range(0, len(points)):
+            x1, y1 = points[p]
+            if (p == len(points) - 1):
+                x2, y2 = points[0]  # para conectar o primeiro com o ultimo
+            else:
+                x2, y2 = points[p + 1]
+            dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
+            if(dist>self.diff):
+                n = int(dist / self.dif)
+                k = (x2 - x1) * self.dif / dist
+                m = (y2 - y1) / (x2 - x1)
+                for i in range(1, n):
+                    xi = x1 + k
+                    yi = y1 + k * m
+                    self.addRef_point(xi, yi)
+                    x1 = xi
+                    y1 = yi
+
 if __name__ == '__main__':
     code("QUARTA01.wmv").execute()
