@@ -924,6 +924,7 @@ class code():
             x1 = xi
             y1 = yi
 
+        self.add_point(x2,y2)
     def interpRef_point(self,point1, point2):
         x1, y1 = point1
         x2, y2 = point2
@@ -932,7 +933,7 @@ class code():
         k = (x2-x1)*self.dif/dist
         m = (y2-y1)/(x2-x1)
 
-        self.more_Refpoints = np.append(n, self.more_points)
+        self.more_Refpoints = np.append(n, self.more_Refpoints)
         for i in range(1, n):
             xi = x1+k
             yi = y1 + k*m
@@ -940,5 +941,6 @@ class code():
             x1 = xi
             y1 = yi
 
+        self.addRef_point(x2, y2)
 if __name__ == '__main__':
     code("QUARTA01.wmv").execute()

@@ -110,8 +110,7 @@ class App:
                 p = np.array([event.x, event.y], dtype=np.float32)
                 self.video.interp_point(self.video.old_points[0], p)
             x,y = self.video.old_points[0]
-            cv2.circle(self.video.frame,(x,y) , 2, (0, 255, 0),
-                       -1)
+            cv2.circle(self.video.frame,(x,y) , 2, (0, 255, 0),-1)
 
         if self.video.flagDistance:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (0, 0, 255),-1)  # sempre que é clicado na imagem, faz um circulo a volta das coord
@@ -129,7 +128,7 @@ class App:
             else:
                 self.video.add_point_distance_perpendicular(event.x, event.y)
         if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
-            cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 255, 0), -1)
+
             self.video.hasRef = True
             if self.video.flagRef == 1:
                 self.video.ref_points = np.array([[event.x, event.y]], dtype=np.float32)
@@ -139,6 +138,9 @@ class App:
             else:
                 p = np.array([event.x, event.y], dtype=np.float32)
                 self.video.interpRef_point(self.video.ref_points[0], p)
+
+            x, y = self.video.ref_points[0]
+            cv2.circle(self.video.frame, (x, y), 2, (255, 255, 0), -1)
 
 
         if self.video.manualScaleFlag:
@@ -158,11 +160,37 @@ class App:
                 cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
             #print(self.video.old_points.size)
 
-            print(self.video.more_points[0])
-            self.video.old_points = self.video.old_points[self.video.more_points[0]-1:]
-            self.video.origin_points = self.video.origin_points[self.video.more_points[0]-1:]
-            self.video.more_points = self.video.more_points[1:]
-            self.video.origin_points = self.video.origin_points[1:]
+            if self.video.more_points.size != 1:
+                self.video.old_points = self.video.old_points[self.video.more_points[0]:]
+                self.video.origin_points = self.video.origin_points[self.video.more_points[0]:]
+                self.video.more_points = self.video.more_points[1:]
+                self.video.origin_points = self.video.origin_points[1:]
+
+            else:
+
+                self.video.old_points = np.array([[]], dtype=np.float32)
+                self.video.origin_points = np.array([[]], dtype=np.float32)
+
+        if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
+            if self.video.ref_points.size != 0:
+                x, y = self.video.ref_points[0]
+                cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
+            # print(self.video.ref_points.size)
+            if len(self.video.more_Refpoints) != 1:
+                self.video.ref_points = self.video.ref_points[self.video.more_Refpoints[0]:]
+                self.video.ref_points_first_frame = self.video.ref_points_first_frame[self.video.more_Refpoints[0]:]
+                self.video.more_Refpoints = self.video.more_Refpoints[1:]
+                self.video.ref_points_first_frame = self.video.ref_points_first_frame[1:]
+
+            else:
+                self.video.hasRef = False
+                self.video.flagRef = False
+                self.video.ref_points = np.array([[]], dtype=np.float32)
+                self.video.ref_points_first_frame = np.array([[]], dtype=np.float32)
+
+        # print("neeeew")
+        # print(self.video.old_points)
+
         if self.video.flagDistance:
             if self.video.vector_distance_2points != 0:
                 x, y = self.video.vector_distance_2points[0]
@@ -175,15 +203,6 @@ class App:
                 cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
             self.video.vector_distance__perpendicular_2points = self.video.vector_distance__perpendicular_2points[1:]
 
-        if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
-            if self.video.ref_points.size != 0:
-                x, y = self.video.ref_points[0]
-                cv2.circle(self.video.frame, (x, y), 2, (0, 0, 0), -1)
-            #print(self.video.ref_points.size)
-            self.video.ref_points = self.video.ref_points[1:]
-            self.video.ref_points_first_frame = self.video.ref_points_first_frame[self.video.more_Refpoints[0]:]
-        #print("neeeew")
-        #print(self.video.old_points)
 
     def update(self):  # função que serve de loop, chamada consoante o valor do self.delay em ms
         if(self.opened):
@@ -354,8 +373,11 @@ class App:
             self.playButton.grid_remove()
             self.pauseButton.grid()
             self.video.pause = False
-            self.video.interp_point(self.video.old_points[0], self.video.old_points[-1])
-            if self.video.hasRef:
+
+            if self.video.old_points.size != 0 and self.video.q == 0:
+                self.video.interp_point(self.video.old_points[0], self.video.old_points[-1])
+
+            if self.video.hasRef and self.video.q1 == 0:
                 self.video.interpRef_point(self.video.ref_points[0], self.video.ref_points[-1])
         else:
             self.pauseButton.grid_remove()
