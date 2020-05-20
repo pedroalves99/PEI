@@ -361,12 +361,11 @@ class App:
             self.video.cap.set(cv2.CAP_PROP_POS_FRAMES, int(frame_num))
 
             __, self.video.old_frame = self.video.cap.read()
-            self.video.old_frame = cv2.cvtColor(self.video.old_frame,
-                                                cv2.COLOR_BGR2GRAY)  # passa a primeira frame para grayScale
+
             self.video.old_frame = self.video.resize(self.video.old_frame)
 
-            __, self.video.frame = self.video.cap.read()
-            self.video.frame = self.video.resize(self.video.frame)
+            self.video.frame = self.video.old_frame
+            self.video.old_frame = cv2.cvtColor(self.video.old_frame,cv2.COLOR_BGR2GRAY)  # passa a primeira frame para grayScale
             # else:
             # pass
             # print("not in pause")
