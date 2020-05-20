@@ -17,11 +17,11 @@ class code():
         self.scale_percent = 115  # percentagem de aumento do video - default 100%
         self.video_path = video_path
         # Lukas Kanade params
-        self.lk_params_dist = dict(winSize=(30, 30),
+        self.lk_params_dist = dict(winSize=(25, 25),
                                    # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
                                    maxLevel=4,
                                    criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
-        self.lk_params = dict(winSize=(30, 30),
+        self.lk_params = dict(winSize=(25, 25),
                               maxLevel=4,
                               criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
         self.cap = cv2.VideoCapture(
@@ -139,6 +139,8 @@ class code():
         self.arraycentroideY = []
         self.arraycentroideRefX = []
         self.arraycentroideRefY = []
+        self.total_frames = 0
+        self.set_frame = 0
         # Mouse Function
 
     def execute(self):
@@ -164,14 +166,14 @@ class code():
 
         if self.pause:  # este while serve para a primeira imagem ficar parada até o utilizador pressionar ('p') -> util para o utilizador selecionar os pnts
 
-            # cap2 = self.cap
-            # if self.flag_c == 0:
-            #     while cap2.isOpened():
-            #         ret, frame = cap2.read()
-            #         if not ret:
-            #             break
-            #         self.num_frames += 1
-            #     self.flag_c = 1
+            if self.flag_c == 0:
+                 capp =  cv2.VideoCapture(self.video_path)
+                 while capp.isOpened():
+                     ret, frame = capp.read()
+                     if not ret:
+                         break
+                     self.total_frames += 1
+                 self.flag_c = 1
             # tirar daqui ------------
 
             #tirar daqui ------------
@@ -199,6 +201,7 @@ class code():
                 self.stopDistanceCoordenadasCentroide = True
                 self.stopCountFrames = True
                 cap1 = cv2.VideoCapture(self.video_path)  # abrir nova captura
+                cap1.set(cv2.CAP_PROP_POS_FRAMES, self.set_frame)
                 if not cap1.isOpened():
                     #print("Erro")
                     exit()
@@ -228,6 +231,7 @@ class code():
                 self.centerRef = None
                 self.centroideAnterior = None
                 self.centroideAnteriorRef = None
+
 
 
             else:

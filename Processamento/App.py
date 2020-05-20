@@ -20,6 +20,7 @@ class App:
         self.window.title("EcoTracker")
         self.window.geometry("1280x720")        #Fixed window size
         self.window.resizable(False, False)
+        self.change = False
 
         # TOP LEFT BUTTONS
         self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 300))
@@ -181,17 +182,20 @@ class App:
             self.canvas_image = self.videoCanvas.create_image(0,0, image=self.photo, anchor=NW)
             self.videoCanvas.bind("<Button 1>", self.select_point)
             self.videoCanvas.bind("<Button 3>", self.delete_point)
-            self.video.execute()
+            self.scaleBar.config(to=self.video.total_frames)
 
-            #print("flagScale")
-            #print(self.video.manualScaleFlag)
+            if not self.change:
+                self.video.execute()
+
+            self.change = False
+
+            if not self.video.pause:
+                self.scaleBar.set(self.video.cap.get(cv2.CAP_PROP_POS_FRAMES))
 
             if self.video.manualScaleFlag and not self.video.okClicked:
                 mb.showinfo(title="Error!", message="Mark scale manually on 1cm!")
                 self.video.okClicked = True
-            #if not self.video.pause:
-            #    self.scaleBar.set(self.video.cap.get(cv2.CAP_PROP_POS_FRAMES))
-            #self.scaleBar.config(to=self.video.num_frames)
+
         self.window.after(self.delay, self.update)
 
     def getFileDir(self):
@@ -347,20 +351,30 @@ class App:
             self.video.pause = True
 
     def onChange(self, frame_num):
-        if self.opened and self.video.num_frames != 0:
 
-            if self.video.pause:
-                self.video.cap.set(cv2.CAP_PROP_POS_FRAMES, int(frame_num))
-                __, self.video.frame = self.video.cap.read()
+        if self.opened and self.video.pause and self.video.cap.get(cv2.CAP_PROP_POS_FRAMES) != int(frame_num):
+            self.video.set_frame = int(frame_num)
+            self.change = True
+            print("change")
+            pass
+            # if self.video.pause:
+            self.video.cap.set(cv2.CAP_PROP_POS_FRAMES, int(frame_num))
 
-                self.video.frame = self.video.resize(self.video.frame)
-            else:
-                self.video.cap.set(cv2.CAP_PROP_POS_FRAMES, int(frame_num))
-                __, self.video.frame1 = self.video.cap.read()
+            __, self.video.old_frame = self.video.cap.read()
+            self.video.old_frame = cv2.cvtColor(self.video.old_frame,
+                                                cv2.COLOR_BGR2GRAY)  # passa a primeira frame para grayScale
+            self.video.old_frame = self.video.resize(self.video.old_frame)
 
-                self.video.frame1 = self.video.resize(self.video.frame1)
-        else:
-            self.scaleBar.set(0)
-
+            __, self.video.frame = self.video.cap.read()
+            self.video.frame = self.video.resize(self.video.frame)
+            # else:
+            # pass
+            # print("not in pause")
+            # self.video.cap.set(cv2.CAP_PROP_POS_FRAMES, int(frame_num))
+            # __, self.video.frame1 = self.video.cap.read()
+            #
+            # self.video.frame1 = self.video.resize(self.video.frame1)
+        # else:
+        #     self.scaleBar.set(0)
 if __name__ == '__main__':
     App()
