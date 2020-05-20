@@ -490,7 +490,7 @@ class code():
 
 
     def linegraphic(self, array1, array2, array3, array4):
-
+        f3 = plt.figure()
         #print("qqqq")
         x = np.linspace(0, self.num_frames, len(array1))
         #print("x")
