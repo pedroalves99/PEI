@@ -23,9 +23,14 @@ class App:
         self.change = False
 
         # TOP LEFT BUTTONS
+<<<<<<< HEAD
+        self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 250))
+        self.referenceHistogram = Button(self.window, text="Reference Histogram", width=15, height=1, command = self.getReferenceHistogram).grid(row=0, column=0, pady=2, padx=(100,50))
+=======
         self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 300))
         self.referenceHistogram = Button(self.window, text="Reference Histogram", width=15, height=1, command = self.getReferenceHistogram).grid(row=0, column=0, pady=2)
         self.CenterOfMass = Button(self.window, text="Center of Mass", width=10, height=1, command=self.getCenterOfMass).grid(row=1, column=0, pady=2, padx=(5, 300))
+>>>>>>> 785e590aecd07875ff037a42ec8279038b641a5e
 
         # BOTTOM LEFT BUTTONS
         self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W+N, padx=(5,0))
@@ -36,7 +41,7 @@ class App:
 
         # VIDEO CANVAS
         self.videoCanvas = Canvas(self.window, width=736, height=552)
-        self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10, pady=(15,0))
+        self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10, pady=(15,0), padx=(0,30))
         self.videoCanvas.configure(bg='grey')
 
         # PLAY BUTTON
@@ -74,14 +79,52 @@ class App:
         self.plusBt = Button(self.window, text=">", font="helvetica 10 bold", command = self.increaseFrame).grid(row=11, column=5, sticky=E+S)
         self.minusBt = Button(self.window, text="<", font="helvetica 10 bold", command = self.decreaseFrame).grid(row=11, column=5, sticky=W+S)
 
+
+
+        # SCALE BUTTONS 
+        self.canvasSizeLb = Label(self.window, text="Video canvas size", font="helvetica 12 bold").grid(row=7, column=0, sticky=W+S, padx=(5,0))
+        self.canvasSizeLbTwo = Label(self.window, text="Changing this option will reset the video", font="helvetica 10 bold").grid(row=8, column=0, padx=(5,0), sticky=W+N)
+        self.plusSizeBt = Button(self.window, text="+", font="helvetica 10 bold", command=self.incrSize).grid(row=8, column=0, sticky=W+S, padx=(5,0))
+        self.minusSizeBt = Button(self.window, text="-", font="helvetica 10 bold", command=self.decrSize).grid(row=8, column=0, padx=100, sticky=W+S)
+
+
+
+
+
         self.filename = None
         self.delay = 15
         self.update()
 
         self.window.mainloop()
 
+
+    def incrSize(self):
+        if self.opened:
+            currSize = self.video.scale_percent
+            self.video = code(self.filename, framesPerVector, minDist, currSize+1)
+            self.videoCanvas.destroy()
+            self.videoCanvas = Canvas(self.window, width=self.video.width, height=self.video.height)
+            self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10, pady=(15,0))
+            self.videoCanvas.configure(bg='grey')
+        else:
+            mb.showinfo(title="Error!", message="Please open a video first!")
+
+    def decrSize(self):
+        if self.opened:
+            currSize = self.video.scale_percent
+            self.video = code(self.filename, framesPerVector, minDist, currSize-1)
+            self.videoCanvas.destroy()
+            self.videoCanvas = Canvas(self.window, width=self.video.width, height=self.video.height)
+            self.videoCanvas.grid(row=0, column=2, columnspan=7, rowspan=10, pady=(15,0))
+            self.videoCanvas.configure(bg='grey')
+        else:
+            mb.showinfo(title="Error!", message="Please open a video first!")
+
+
+
     def increaseFrame(self):
         self.scaleBar.set(self.scaleBar.get()+1)
+
 
     def decreaseFrame(self):
         self.scaleBar.set(self.scaleBar.get()-1)
