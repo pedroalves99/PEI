@@ -23,9 +23,9 @@ class App:
         self.change = False
 
         # TOP LEFT BUTTONS
-        self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(5, 250))
+        self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(10, 250))
         self.referenceHistogram = Button(self.window, text="Reference Histogram", width=15, height=1, command = self.getReferenceHistogram).grid(row=0, column=0, pady=2, padx=(100,50))
-        self.CenterOfMass = Button(self.window, text="Center of Mass", width=10, height=1, command=self.getCenterOfMass).grid(row=1, column=0, pady=2, padx=(5, 300))
+        self.CenterOfMass = Button(self.window, text="Center of Mass", width=10, height=1, command=self.getCenterOfMass).grid(row=1, column=0, pady=2, padx=(10, 250), sticky=N)
 
         # BOTTOM LEFT BUTTONS
         self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W+N, padx=(5,0))
