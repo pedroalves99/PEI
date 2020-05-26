@@ -260,6 +260,7 @@ class code():
                         self.q1 = 1
                 #print("points" + str (self.vector_points_ref))
                 if self.old_points.size != 0:  # 1st contour
+                    print(self.old_points.size)
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
                                                                                         self.old_points, None,
                                                                                         **self.lk_params)  # tracking Luccas Kanade, Optial flow

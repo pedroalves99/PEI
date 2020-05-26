@@ -177,18 +177,25 @@ class App:
     def delete_point(self, event):
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
             cv2.circle(self.video.frame, self.click_points[-1], 2, (0, 0, 0), -1)
-            if len(self.click_points) != 0:
+            if len(self.click_points) > 1:
                 self.click_points = self.click_points[:-1]
+                print(self.click_points,":",len(self.click_points))
             else:
-                self.click_points.clear
+                self.click_points.clear()
+                print("ollllll",self.click_points)
         if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
-            cv2.circle(self.video.frame, self.click_Refpoints[-1], 2, (0, 0, 0), -1)
-            if len(self.click_Refpoints) != 0:
-                self.click_Refpoints= self.click_Refpoints[:-1]
+            if len(self.click_Refpoints)==0:
+                self.video.flagRef = False
+
             else:
-                self.click_Refpoints.clear
-                self.video.hasRef = False
-                self.video.flagRef = 1
+                cv2.circle(self.video.frame, self.click_Refpoints[-1], 2, (0, 0, 0), -1)
+                if len(self.click_Refpoints) > 1:
+                    self.click_Refpoints= self.click_Refpoints[:-1]
+
+                else:
+                    self.click_Refpoints.clear()
+                    self.video.hasRef = False
+
         if self.video.flagDistance:
             if self.video.vector_distance_2points != 0:
                 x, y = self.video.vector_distance_2points[0]
@@ -374,7 +381,7 @@ class App:
             self.pauseButton.grid()
             self.video.pause = False
 
-            if self.click_points != 0 and self.video.q == 0:
+            if len(self.click_points) > 0 and self.video.q == 0:
                 self.video.interp_point(self.click_points)
 
             if self.video.hasRef and self.video.q1 == 0:
