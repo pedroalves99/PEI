@@ -21,6 +21,8 @@ class App:
         self.window.geometry("1280x720")        #Fixed window size
         self.window.resizable(False, False)
         self.change = False
+        self.frame_num = 0
+        self.first_frame = 0
 
         # TOP LEFT BUTTONS
         self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(10, 250))
@@ -126,9 +128,22 @@ class App:
         self.playButton.grid()
         self.video.pause = True
         self.scaleBar.set(0)
+        self.first_frame = 0
+        self.video.record = []
+        self.frame_num = 1
 
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
         self.video.point_selected = True
+        if self.video.doScale:
+            if not self.video.manualScaleFlag:
+                try:
+                    self.video.conversao = self.video.findScale(self.frame)
+                except IndexError:
+                    self.video.manualScaleFlag = True
+            elif self.video.vector_scale.size > 2:
+                self.video.conversao = self.video.findScaleManually(self.video.vector_scale)
+                self.video.doScale = False
+
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
             if self.video.flag == 1:  # cria os arrays que vão ter as coordenadas dos pontos clicados
                 self.click_points = [(event.x,event.y)]
@@ -225,13 +240,24 @@ class App:
             self.videoCanvas.bind("<Button 3>", self.delete_point)
             self.scaleBar.config(to=self.video.total_frames)
 
+            if len(self.video.record) <= (self.frame_num - self.first_frame - 1):
+                self.video.show_record = False
+                
             if not self.change:
                 self.video.execute()
 
             self.change = False
 
             if not self.video.pause:
-                self.scaleBar.set(self.video.cap.get(cv2.CAP_PROP_POS_FRAMES))
+                if not self.video.show_record :
+                    self.scaleBar.set(self.video.cap.get(cv2.CAP_PROP_POS_FRAMES))
+                else:
+                    self.scaleBar.set(self.frame_num)
+                    if self.frame_num == self.video.total_frames:
+                        self.frame_num = self.first_frame
+                    else:
+                        self.frame_num += 1
+
 
             if self.video.manualScaleFlag and not self.video.okClicked:
                 mb.showinfo(title="Error!", message="Mark scale manually on 1cm!")
@@ -393,14 +419,28 @@ class App:
 
     def onChange(self, frame_num):
 
-        if self.opened and self.video.pause and self.video.cap.get(cv2.CAP_PROP_POS_FRAMES) != int(frame_num):
-            self.video.set_frame = int(frame_num)
+        #print("tamanho array" +str(len(self.video.record)))
+        #print(frame_num)
+        frame_num = int(frame_num)
+        self.frame_num = frame_num
+
+        if len(self.video.record)  > (frame_num - self.first_frame - 1) and len(self.video.record) != 0:
+
+            self.video.show_record = True
+            self.change = True
+            self.video.old_frame = self.video.record[frame_num - self.first_frame - 1]
+            self.video.frame = self.video.old_frame
+            self.video.old_frame = cv2.cvtColor(self.video.old_frame, cv2.COLOR_BGR2GRAY)
+
+        elif self.opened and self.video.pause and self.video.cap.get(cv2.CAP_PROP_POS_FRAMES) != frame_num:
+
+            self.video.set_frame = frame_num
             self.change = True
             print("change")
             pass
             # if self.video.pause:
             self.video.cap.set(cv2.CAP_PROP_POS_FRAMES, int(frame_num))
-
+            self.first_frame = frame_num
             __, self.video.old_frame = self.video.cap.read()
 
             self.video.old_frame = self.video.resize(self.video.old_frame)

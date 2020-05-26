@@ -141,11 +141,18 @@ class code():
         self.arraycentroideRefY = []
         self.total_frames = 0
         self.set_frame = 0
+        self.record = []
+        self.recorded_frames = np.array([[]],dtype=np.float32)
+        self.show_record = False
         # Mouse Function
+
+    def record_video(self, frame):
+        self.record.append(frame)
 
     def execute(self):
         # cv2.namedWindow("Frame")
         # cv2.setMouseCallback("Frame", self.select_point)                                      # quando se carrega no rato ativa a funçao select_point
+
         if self.doScale:
             if not self.manualScaleFlag:
                 try:
@@ -174,16 +181,23 @@ class code():
                          break
                      self.total_frames += 1
                  self.flag_c = 1
-            # tirar daqui ------------
 
-            #tirar daqui ------------
 
             if len(self.vector_scale) == 2:
                 self.manualScaleFlag = False
-        else:
+
+
+        elif not self.show_record:
+
+
+             ### RECORD
+            self.show_record = False
+            self.record_video(self.frame)
+
+
             if not self.stopCountFrames:
                 self.num_frames +=1
-                #print(self.num_frames)
+
 
             check, self.frame = self.cap.read()  # le frame a frame
             self.t += 1
