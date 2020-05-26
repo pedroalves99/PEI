@@ -134,15 +134,8 @@ class App:
 
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
         self.video.point_selected = True
-        if self.video.doScale:
-            if not self.video.manualScaleFlag:
-                try:
-                    self.video.conversao = self.video.findScale(self.frame)
-                except IndexError:
-                    self.video.manualScaleFlag = True
-            elif self.video.vector_scale.size > 2:
-                self.video.conversao = self.video.findScaleManually(self.video.vector_scale)
-                self.video.doScale = False
+
+
 
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
             if self.video.flag == 1:  # cria os arrays que vão ter as coordenadas dos pontos clicados
@@ -181,7 +174,7 @@ class App:
                 self.video.add_point_distance_perpendicular(event.x, event.y)
 
 
-        if self.video.manualScaleFlag:
+        if self.video.manualScaleFlag and self.video.okClicked:
             cv2.circle(self.video.frame, (event.x, event.y), 2, (255, 255, 0), -1)
             if self.video.manualScaleFlag == 1:
                 self.video.vector_scale = np.array([[event.x, event.y]], dtype=np.float32)
@@ -189,15 +182,19 @@ class App:
             else:
                 self.video.add_point_scale_vector(event.x, event.y)
 
+        if self.video.manualScaleFlag and not self.video.okClicked:
+            mb.showinfo(title="Error!", message="Mark scale manually on 1cm!")
+            self.video.okClicked = True
+
     def delete_point(self, event):
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
             cv2.circle(self.video.frame, self.click_points[-1], 2, (0, 0, 0), -1)
             if len(self.click_points) > 1:
                 self.click_points = self.click_points[:-1]
-                print(self.click_points,":",len(self.click_points))
+                #print(self.click_points,":",len(self.click_points))
             else:
                 self.click_points.clear()
-                print("ollllll",self.click_points)
+                #print("ollllll",self.click_points)
         if self.video.flagRef and not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.manualScaleFlag:
             if len(self.click_Refpoints)==0:
                 self.video.flagRef = False
@@ -259,9 +256,7 @@ class App:
                         self.frame_num += 1
 
 
-            if self.video.manualScaleFlag and not self.video.okClicked:
-                mb.showinfo(title="Error!", message="Mark scale manually on 1cm!")
-                self.video.okClicked = True
+
 
         self.window.after(self.delay, self.update)
 

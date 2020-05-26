@@ -206,10 +206,7 @@ class code():
                 self.frame = self.resize(self.frame)
 
             if not check:  # entra neste if quando acaba os frames do video, abre-se outra captura para manter em loop
-                #print(self.counts)
-                # self.counts = defaultdict(int)
-                #print("o")
-                #print(self.counts)
+
                 self.doScale = True
                 # self.tmp7 = []
                 self.stopDistanceCoordenadasCentroide = True
@@ -267,14 +264,11 @@ class code():
                     self.frame = cv2.add(self.frame, self.Refspline)
 
                     if self.q1 == 0:
-                        #self.refTrack_points = self.resample_points(self.Refspline, self.dif)
-                        #self.ref_points = self.refTrack_points
-                        #self.vector_points_ref = self.refTrack_points
-                        #print("so uma vez")
+
                         self.q1 = 1
-                #print("points" + str (self.vector_points_ref))
+
                 if self.old_points.size != 0:  # 1st contour
-                    #print(self.old_points.size)
+
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
                                                                                         self.old_points, None,
                                                                                         **self.lk_params)  # tracking Luccas Kanade, Optial flow
@@ -311,14 +305,9 @@ class code():
 
                     if self.q == 0:  # só faz o resampling 1 vez
                         if self.old_points.size != 0:
-                            #self.track_points = self.resample_points(self.spline, self.dif)
-                            #self.old_points = self.track_points
-                            #self.vector_points = self.track_points
+
                             self.q = 1
 
-
-                    # print("distance")
-                    # print(self.distancePercorridaCentroide)
 
                 if len(self.vector_distance_2points) == 2:
                     self.distanciaIntroduzida = self.hipote(self.vector_distance_2points[0][0],
@@ -382,8 +371,7 @@ class code():
 
         self.arrayMedidas = [sum(self.tmp), sum(self.tmp1), sum(self.tmp2), sum(self.tmp3), sum(self.tmp4),
                              sum(self.tmp5), sum(self.tmp6), sum(self.tmp7)]
-        # print("ola")
-        # print(self.arrayMedidas)
+
         self.arrayMedidasCentroide = [sum(self.c_tmp), sum(self.c_tmp1), sum(self.c_tmp2), sum(self.c_tmp3),
                                       sum(self.c_tmp4), sum(self.c_tmp5), sum(self.c_tmp6), sum(self.c_tmp7)]
 
@@ -394,11 +382,9 @@ class code():
 
 
     def showGraph(self):
-        #print("X")
-        #print(self.arraycentroideX)
+
         self.linegraphic(self.arraycentroideX, self.arraycentroideY, self.arraycentroideRefX, self.arraycentroideRefY)
-        #print("ola")
-        #print(self.arraycentroideRefX)
+
         plt.show()
 
 
@@ -871,7 +857,7 @@ class code():
                         self.new = [al / self.a for al in self.arrayArrows]
                         #print(new)
                         self.newArrows = [i * 100 for i in self.new]
-                        print(self.newArrows)
+                        #print(self.newArrows)
 
                     # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
                     # print(tmp)
