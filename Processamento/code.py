@@ -274,7 +274,7 @@ class code():
                         self.q1 = 1
                 #print("points" + str (self.vector_points_ref))
                 if self.old_points.size != 0:  # 1st contour
-                    print(self.old_points.size)
+                    #print(self.old_points.size)
                     self.new_points, self.status, self.error = cv2.calcOpticalFlowPyrLK(self.old_frame, self.gray_frame,
                                                                                         self.old_points, None,
                                                                                         **self.lk_params)  # tracking Luccas Kanade, Optial flow
@@ -394,11 +394,11 @@ class code():
 
 
     def showGraph(self):
-        print("X")
+        #print("X")
         #print(self.arraycentroideX)
         self.linegraphic(self.arraycentroideX, self.arraycentroideY, self.arraycentroideRefX, self.arraycentroideRefY)
-        print("ola")
-        print(self.arraycentroideRefX)
+        #print("ola")
+        #print(self.arraycentroideRefX)
         plt.show()
 
 
@@ -412,7 +412,7 @@ class code():
                                       sum(self.c_tmp4), sum(self.c_tmp5), sum(self.c_tmp6), sum(self.c_tmp7)]
 
     def showHistogram(self):
-        self.histogram(self.arrayx, self.arrayArrows, self.arrayMedidasCentroide)
+        self.histogram(self.arrayx, self.newArrows, self.arrayMedidasCentroide)
         plt.show()
 
     def calcRefHistogram(self):
@@ -477,9 +477,9 @@ class code():
         bars1 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         y_pos1 = np.arange(len(bars))
         ax1 = plt.subplot(3, 1, 2)
-        ax1.set_ylabel('Number of vectors')
+        ax1.set_ylabel('Number of vectors(%)')
         histograma1 = ax1.bar(y_pos1 + 0.1, array2, width=0.4, color='darkgray', align='center',
-                              label='Number of vectors')
+                              label='Number of vectors(%)')
         # print("check")
         # print(array2[0])
         # Create names
@@ -866,7 +866,13 @@ class code():
                     for cardinal_point, count in self.counts.items():
                         # print(f'{cardinal_point} appears a total of {count} times.')
                         self.arrayArrows = [i for i in self.counts.values()]
-                        # print(arrayArrows)
+                        #print(self.arrayArrows)
+                        self.a = sum(self.arrayArrows)
+                        self.new = [al / self.a for al in self.arrayArrows]
+                        #print(new)
+                        self.newArrows = [i * 100 for i in self.new]
+                        print(self.newArrows)
+
                     # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
                     # print(tmp)
             i += 1

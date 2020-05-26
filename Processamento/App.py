@@ -296,7 +296,7 @@ class App:
 
     def getCenterOfMass(self):
         self.video.showGraph()
-        print("aqui")
+        #print("aqui")
 
     def exportExcel(self, evaluationType):
         if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
