@@ -962,13 +962,14 @@ class code():
             else:
                 x2, y2 = points[p + 1]
             dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
-            n = int(dist/self.dif)
+            n = round(dist/self.dif)
             k = (x2-x1)*self.dif/dist
-            m = (y2-y1)/(x2-x1)
+            #m = (y2-y1)/(x2-x1)
 
             for i in range(1, n):
                 xi = x1+k
-                yi = y1 + k*m
+                #yi = y1 + k*m
+                yi = y1 + (y2 - y1) * self.dif / dist
                 self.add_point(xi,yi)
                 x1 = xi
                 y1 = yi
@@ -986,12 +987,13 @@ class code():
                 x2, y2 = points[p + 1]
             dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
             if(dist>self.dif):
-                n = int(dist / self.dif)
+                n = round(dist / self.dif)
                 k = (x2 - x1) * self.dif / dist
-                m = (y2 - y1) / (x2 - x1)
+                #m = (y2 - y1) / (x2 - x1)
                 for i in range(1, n):
                     xi = x1 + k
-                    yi = y1 + k * m
+                    #yi = y1 + k * m
+                    yi = y1 + (y2-y1)*self.dif/dist
                     self.addRef_point(xi, yi)
                     x1 = xi
                     y1 = yi
