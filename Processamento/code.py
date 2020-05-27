@@ -299,13 +299,17 @@ class code():
                     if self.flagDistanceCoordenadasCentroide and not self.stopDistanceCoordenadasCentroide and self.hasRef: #para calcular o grafico x,y dos centroides
 
                         self.distanceBetweenCentroideX = self.centroideAnterior[0] - self.center[0]
+                        self.distanceBetweenCentroideX = self.distanceBetweenCentroideX / self.conversao*10
                         self.arraycentroideX.append(round(self.distanceBetweenCentroideX,3))
                         self.distanceBetweenCentroideY = self.centroideAnterior[1] - self.center[1]
+                        self.distanceBetweenCentroideY = self.distanceBetweenCentroideY / self.conversao*10
                         self.arraycentroideY.append(round(self.distanceBetweenCentroideY,3))
 
                         self.distanceBetweenCentroideRefX = self.centroideAnteriorRef[0] - self.centerRef[0]
+                        self.distanceBetweenCentroideRefX = self.distanceBetweenCentroideRefX / self.conversao*10
                         self.arraycentroideRefX.append(round(self.distanceBetweenCentroideRefX,3))
                         self.distanceBetweenCentroideRefY = self.centroideAnteriorRef[1] - self.centerRef[1]
+                        self.distanceBetweenCentroideRefY = self.distanceBetweenCentroideRefY / self.conversao*10
                         self.arraycentroideRefY.append(round(self.distanceBetweenCentroideRefY,3))
 
 
@@ -529,7 +533,7 @@ class code():
         plt.plot(x, array3, label='xRef')
         plt.plot(x, array4, label='yRef')
         plt.xlabel('Frames')
-        plt.ylabel('Distance (px)')
+        plt.ylabel('Distance (mm)')
         plt.title("Center of Mass Movement")
         plt.legend()
         #print("xxxx")
