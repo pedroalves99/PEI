@@ -307,7 +307,11 @@ class App:
                     self.video.array2 = []
 
                 ew.create_excel(filename)
-                ew.add_data(filename, self.filename, evaluationType, self.video.arrayx, self.video.arrayMedidasCentroide, self.video.array2, self.video.area_initial, self.video.area, 0, 0)
+                for index in range(0, len(self.video.array_dislocation)):
+                    ew.add_data(filename, self.filename, evaluationType, self.video.array_dislocation[index],
+                                self.video.array_cm[index], self.video.array_dislocation_ref[index],
+                                self.video.area_initial, self.video.array_area[index],
+                                0, 0, self.video.array_frame_num[index])
             if self.opened:
                 mb.showinfo(title="Done!", message="Exported successfully!")
             else:
@@ -322,10 +326,9 @@ class App:
         if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
             # FAZER AS COISAS AQUI
             filename = fd.askopenfilename(filetypes=[("Excel sheet", ".xls .xlsx")])
-            self.video.calcHistogram()
-            if self.video.flagRef:
-                self.video.calcRefHistogram()
-            ew.add_data(filename, self.filename, evaluationType, self.video.arrayx, self.video.arrayMedidasCentroide,self.video.array2, self.video.area_initial, self.video.area, 0, 0)
+            for index in range(0, len(self.video.array_dislocation)):
+
+                ew.add_data(filename, self.filename, evaluationType, self.video.array_dislocation[index], self.video.array_cm[index],self.video.array_dislocation_ref[index], self.video.area_initial, self.video.array_area[index], 0, 0, self.video.array_frame_num[index])
             mb.showinfo(title="Done!", message="Exported successfully!")
         else:
             mb.showinfo(title="Done!", message="Please fill in the evaluation Type!")

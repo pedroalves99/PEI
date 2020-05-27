@@ -87,6 +87,10 @@ def create_excel(filename):
 
     worksheet.merge_range('AC1:AD1', 'Perimeter(mm)', cell_format6)  # Area contour
 
+    worksheet.write("AE1", "Frame Number", cell_format2)
+    worksheet.write("AE2", "", cell_format2)
+
+
     worksheet.write("A1", "Video Name", cell_format1 )
     worksheet.write("A2", "", cell_format1)
 
@@ -132,6 +136,7 @@ def create_excel(filename):
     worksheet.write("AD2", "Final", cell_format6)
 
 
+
     workbook.close()
 
 
@@ -147,7 +152,7 @@ def set_value(ws, index, p, value):
 
 
 
-def add_data(filename, video_name, eval_type, global_dislocation, cm_dislocation, reference_dislocation, area_initial, area_final, perimeter_initial, perimeter_final):
+def add_data(filename, video_name, eval_type, global_dislocation, cm_dislocation, reference_dislocation, area_initial, area_final, perimeter_initial, perimeter_final, frame_num):
     index = 1
     found = False
     workbook = load_workbook(filename)
@@ -180,7 +185,7 @@ def add_data(filename, video_name, eval_type, global_dislocation, cm_dislocation
         max8 = p + 8
         for v in range (p, max8):
             set_value(ws, index, p, "")
-
+            p+=1
 
     if len(cm_dislocation) == 8:
         for elem in cm_dislocation:
@@ -190,6 +195,7 @@ def add_data(filename, video_name, eval_type, global_dislocation, cm_dislocation
         max8 = p + 8
         for v in range(p, max8):
             set_value(ws, index, p, "")
+            p += 1
 
     if len(reference_dislocation) == 8:
         for elem in reference_dislocation:
@@ -199,6 +205,7 @@ def add_data(filename, video_name, eval_type, global_dislocation, cm_dislocation
         max8 = p + 8
         for v in range(p, max8):
             set_value(ws, index, p, "")
+            p += 1
 
     set_value(ws, index, p, area_initial)
     p += 1
@@ -210,6 +217,9 @@ def add_data(filename, video_name, eval_type, global_dislocation, cm_dislocation
     p += 1
 
     set_value(ws, index, p, perimeter_final)
+    p += 1
+
+    set_value(ws, index, p, frame_num)
     p += 1
 
     workbook.save(filename)

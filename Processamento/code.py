@@ -144,6 +144,14 @@ class code():
         self.record = []
         self.recorded_frames = np.array([[]],dtype=np.float32)
         self.show_record = False
+        self.array_dislocation = []
+        self.array_cm = []
+        self.array_dislocation_ref = []
+        self.array_area = []
+        self.array_frame_num = []
+        self.arrayx = np.array([[]], dtype=np.float32)
+        self.array2 = np.array([[]], dtype=np.float32)
+
         # Mouse Function
 
     def record_video(self, frame):
@@ -343,6 +351,13 @@ class code():
 
                 if self.q == 1:
                     self.area_initial = self.area
+
+                    self.array_dislocation.append(self.arrayx)
+                    self.array_cm.append(self.arrayMedidasCentroide)
+                    self.array_dislocation_ref.append(self.array2)
+                    self.array_area.append(self.area)
+                    self.array_frame_num.append(self.num_frames)
+
                     self.q += 1
                 if self.newref_points.size != 0:
                     self.ref_area = self.contourArea(self.newref_points)
@@ -357,6 +372,18 @@ class code():
                     self.centroideAnterior = self.center
                     self.centroideAnteriorRef = self.centerRef
                     self.vector_points_ref = self.ref_points
+                    self.calcHistogram()
+                    if self.flagRef:
+                        self.calcRefHistogram()
+                    else: self.array2 = np.array([[]], dtype=np.float32)
+
+
+                    self.array_dislocation.append(self.arrayx)
+                    self.array_cm.append(self.arrayMedidasCentroide)
+                    self.array_dislocation_ref.append(self.array2)
+                    self.array_area.append(self.area)
+                    self.array_frame_num.append(self.num_frames)
+
                     self.t = 0  # reset da variavel
 
                 self.spline = np.zeros_like(self.spline)  # reset
