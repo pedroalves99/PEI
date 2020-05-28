@@ -25,9 +25,9 @@ class App:
         self.first_frame = 0
 
         # TOP LEFT BUTTONS
-        self.histogramBt = Button(self.window, text="Histogram", width=10, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(10, 250))
-        self.referenceHistogram = Button(self.window, text="Reference Histogram", width=15, height=1, command = self.getReferenceHistogram).grid(row=0, column=0, pady=2, padx=(100,50))
-        self.CenterOfMass = Button(self.window, text="Center of Mass", width=10, height=1, command=self.getCenterOfMass).grid(row=1, column=0, pady=2, padx=(10, 250), sticky=N)
+        self.histogramBt = Button(self.window, text="Histogram", width=16, height=1, command = self.getHistogram).grid(row=0, column=0, pady=2, padx=(10, 200), sticky=W)
+        self.referenceHistogram = Button(self.window, text="Reference Histogram", width=16, height=1, command = self.getReferenceHistogram).grid(row=0, column=0, pady=2, padx=(100,0))
+        self.CenterOfMass = Button(self.window, text="Center of Mass", width=16, height=1, command=self.getCenterOfMass).grid(row=1, column=0, pady=2, padx=(10, 50), sticky=N+W)
 
         # BOTTOM LEFT BUTTONS
         self.evaluationTypeLb = Label(self.window, text="Evaluation Type", font="helvetica 10 bold").grid(row=11, column=0, sticky=W+N, padx=(5,0))
@@ -80,8 +80,8 @@ class App:
         # SCALE BUTTONS 
         self.canvasSizeLb = Label(self.window, text="Video canvas size", font="helvetica 12 bold").grid(row=7, column=0, sticky=W+S, padx=(5,0))
         self.canvasSizeLbTwo = Label(self.window, text="Changing this option will reset the video", font="helvetica 10 bold").grid(row=8, column=0, padx=(5,0), sticky=W+N)
-        self.plusSizeBt = Button(self.window, text="+", font="helvetica 10 bold", command=self.incrSize).grid(row=8, column=0, sticky=W+S, padx=(5,0))
-        self.minusSizeBt = Button(self.window, text="-", font="helvetica 10 bold", command=self.decrSize).grid(row=8, column=0, padx=100, sticky=W+S)
+        self.plusSizeBt = Button(self.window, text="+", width=3, font="helvetica 10 bold", command=self.incrSize).grid(row=8, column=0, sticky=W+S, padx=(5,0))
+        self.minusSizeBt = Button(self.window, text="-", width=3, font="helvetica 10 bold", command=self.decrSize).grid(row=8, column=0, padx=100, sticky=W+S)
 
 
         self.filename = None
@@ -113,9 +113,6 @@ class App:
         else:
             mb.showinfo(title="Error!", message="Please open a video first!")
 
-
-
-
     def increaseFrame(self):
         self.scaleBar.set(self.scaleBar.get()+1)
 
@@ -123,19 +120,18 @@ class App:
         self.scaleBar.set(self.scaleBar.get()-1)
 
     def delAll(self):
-        self.video = code(self.filename, framesPerVector, minDist)
-        self.pauseButton.grid_remove()
-        self.playButton.grid()
-        self.video.pause = True
-        self.scaleBar.set(0)
-        self.first_frame = 0
-        self.video.record = []
-        self.frame_num = 1
+        if (self.opened):
+            self.video = code(self.filename, framesPerVector, minDist)
+            self.pauseButton.grid_remove()
+            self.playButton.grid()
+            self.video.pause = True
+            self.scaleBar.set(0)
+            self.first_frame = 0
+            self.video.record = []
+            self.frame_num = 1
 
     def select_point(self,event):  # Chamada quando se clica no video, registando as coordenadas dos pontos selecionados
         self.video.point_selected = True
-
-
 
         if not self.video.flagDistance and not self.video.flagDistancePerpendicular and not self.video.flagRef and not self.video.manualScaleFlag:
             if self.video.flag == 1:  # cria os arrays que vão ter as coordenadas dos pontos clicados
@@ -255,9 +251,6 @@ class App:
                     else:
                         self.frame_num += 1
 
-
-
-
         self.window.after(self.delay, self.update)
 
     def getFileDir(self):
@@ -270,7 +263,6 @@ class App:
         self.videoCanvas.configure(bg='grey')
         self.filenameLb = Label(self.window, text=self.filename, font="helvetica 9 bold").grid(row=15, column=0, columnspan=30, sticky=W+S, padx=5)
         self.opened = True
-
 
     def getSpeed1x(self):
         self.delay = 15
@@ -319,9 +311,6 @@ class App:
         else:
             mb.showinfo(title="Done!", message="Please fill in the evaluation Type!")
         
-        
-       
-
     def addExcel(self, evaluationType):
         if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
             # FAZER AS COISAS AQUI
@@ -398,6 +387,7 @@ class App:
         framesPerVector = nfvEntry.get()
         minDist = minDistEntry.get()
         optionsWindow.destroy()
+        self.video = code(self.filename, framesPerVector, minDist, currSize+1)
 
     def play(self):
         if self.video.pause:  # usar a variavel do code.py
