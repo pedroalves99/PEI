@@ -398,7 +398,7 @@ class App:
             if len(self.click_points) > 0 and self.video.q == 0:
                 self.video.interp_point(self.click_points)
 
-            if self.video.hasRef and self.video.q1 == 0:
+            if self.video.hasRef and len(self.click_Refpoints)> 0 and self.video.q1 == 0:
                 self.video.interpRef_point(self.click_Refpoints)
         else:
             self.pauseButton.grid_remove()

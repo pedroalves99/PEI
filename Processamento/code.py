@@ -286,7 +286,9 @@ class code():
 
                     self.center = self.centroide(self.new_points)
                     if self.hasRef:
+                        print(self.newref_points)
                         self.centerRef = self.centroide(self.newref_points)
+                        print(self.centerRef)
                         cv2.circle(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), 2, (255, 255, 0), -1)
                     self.draw_center_vectors(self.vectors_factor)  # fazer o hist
 
@@ -669,8 +671,12 @@ class code():
         return contour
 
     def centroide(self, points):
-        mom = cv2.moments(points)
-        center = (mom["m10"]/mom["m00"], mom["m01"]/mom["m00"])
+        if points.size > 2:
+            mom = cv2.moments(points)
+            center = (mom["m10"]/mom["m00"], mom["m01"]/mom["m00"])
+        else:
+            center = points[0]
+
         return center
 
 
@@ -962,23 +968,24 @@ class code():
             else:
                 x2, y2 = points[p + 1]
             dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
-            n = round(dist/self.dif)
-            k = (x2-x1)*self.dif/dist
-            #m = (y2-y1)/(x2-x1)
+            if (dist > self.dif):
+                n = round(dist/self.dif)
+                k = (x2-x1)*self.dif/dist
+                #m = (y2-y1)/(x2-x1)
 
-            for i in range(1, n):
-                xi = x1+k
-                #yi = y1 + k*m
-                yi = y1 + (y2 - y1) * self.dif / dist
-                self.add_point(xi,yi)
-                x1 = xi
-                y1 = yi
+                for i in range(1, n):
+                    xi = x1+k
+                    #yi = y1 + k*m
+                    yi = y1 + (y2 - y1) * self.dif / dist
+                    self.add_point(xi,yi)
+                    x1 = xi
+                    y1 = yi
 
     def interpRef_point(self, points):
         x, y = points[0]
         self.ref_points = np.array([[x, y]], dtype=np.float32)
         self.ref_points_first_frame = np.array([[x, y]], dtype=np.float32)
-
+        self.ref_points_first_frame = np.array([[x, y]], dtype=np.float32)
         for p in range(0, len(points)):
             x1, y1 = points[p]
             if (p == len(points) - 1):
