@@ -630,8 +630,8 @@ class code():
 
     # save_video('video.avi', 20, mirror=True)   depois vejo...
 
-    def save_video(self, outPath, fps, mirror=False):
-        out = cv2.VideoWriter('abc.avi', self.fourcc, fps, (int(self.width), int(self.height)))
+    def save_video(self, outPath, fps=30, mirror=False):
+        out = cv2.VideoWriter(outPath, self.fourcc, fps, (int(self.width), int(self.height)))
         while ((self.cap).isOpened()):
             if (self.check == True):
                 out.write(frame)

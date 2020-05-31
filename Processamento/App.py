@@ -323,10 +323,12 @@ class App:
             mb.showinfo(title="Done!", message="Please fill in the evaluation Type!")
         
 
-    def saveFileDir(self, evaluationType):
+    def saveFileDir(self):
         filename = fd.asksaveasfilename()
+        filename = filename+'.avi'
         if self.opened:
             mb.showinfo(title="Done!", message="Saved successfully!")
+            self.video.save_video(filename)
         else:
             mb.showinfo(title="Error!", message="Please open a video first!")
 
