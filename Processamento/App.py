@@ -325,10 +325,15 @@ class App:
 
     def saveFileDir(self):
         filename = fd.asksaveasfilename()
-        filename = filename+'.avi'
+        if(filename[-5:] != ".avi" or filename[-4:] != ".avi"):
+            filename = filename+'.avi'
         if self.opened:
+
+            self.video.out = cv2.VideoWriter(filename, self.video.fourcc, self.video.fps, (int(self.video.width), int(self.video.height)))
+            for frame in self.video.record:
+                self.video.out.write(frame)
+
             mb.showinfo(title="Done!", message="Saved successfully!")
-            self.video.save_video(filename)
         else:
             mb.showinfo(title="Error!", message="Please open a video first!")
 

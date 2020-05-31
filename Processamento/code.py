@@ -78,7 +78,6 @@ class code():
         self.height = int(self.height * self.scale_percent / 100)
         self.fps = 30.0
         self.fourcc = cv2.VideoWriter_fourcc(*'XVID')  # define saida
-        self.filename = 'video.avi'
         # out = cv2.VideoWriter(load_file(filename), fourcc, fps, (int(width), int(height))) # cria o objeto VideoWriter, comentei p não estar sp a gravar
         self.t = 0
         self.x = 0
@@ -196,7 +195,6 @@ class code():
 
 
         elif not self.show_record:
-
 
              ### RECORD
             self.show_record = False
@@ -628,13 +626,8 @@ class code():
 
         return new_points
 
-    # save_video('video.avi', 20, mirror=True)   depois vejo...
 
-    def save_video(self, outPath, fps=30, mirror=False):
-        out = cv2.VideoWriter(outPath, self.fourcc, fps, (int(self.width), int(self.height)))
-        while ((self.cap).isOpened()):
-            if (self.check == True):
-                out.write(frame)
+
 
     def findScale(self, p_frame):
         contour1 = np.zeros_like(p_frame)
