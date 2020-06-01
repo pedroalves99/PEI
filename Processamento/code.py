@@ -970,7 +970,7 @@ class code():
             if (dist >= self.dif):
                 n = round(dist/self.dif)
 
-                for i in range(1, n+1):
+                for i in range(1, n):
                     xi = xi + u1
                     yi = yi + u2
                     self.add_point(xi,yi)
@@ -997,7 +997,7 @@ class code():
             if (dist >= self.dif):
                 n = round(dist / self.dif)
 
-                for i in range(1, n + 1):
+                for i in range(1, n ):
                     xi = xi + u1
                     yi = yi + u2
                     self.addRef_point(xi, yi)
