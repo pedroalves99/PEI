@@ -284,9 +284,9 @@ class code():
 
                     self.center = self.centroide(self.new_points)
                     if self.hasRef:
-                        print(self.newref_points)
+            
                         self.centerRef = self.centroide(self.newref_points)
-                        print(self.centerRef)
+
                         cv2.circle(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), 2, (255, 255, 0), -1)
                     self.draw_center_vectors(self.vectors_factor)  # fazer o hist
 
