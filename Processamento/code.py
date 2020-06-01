@@ -961,18 +961,20 @@ class code():
                 x2, y2 = points[0]  # para conectar o primeiro com o ultimo
             else:
                 x2, y2 = points[p + 1]
+
             dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
-            x0 = x1
-            y0 = y1
+            u1 = (x2 - x1) * self.dif / dist
+            u2 = (y2 - y1) * self.dif / dist
+            xi = x1
+            yi = y1
             if (dist >= self.dif):
                 n = round(dist/self.dif)
 
                 for i in range(1, n+1):
-                    xi = x0 + (x2 - x1) * self.dif / dist
-                    yi = y0 + (y2 - y1) * self.dif / dist
+                    xi = xi + u1
+                    yi = yi + u2
                     self.add_point(xi,yi)
-                    x0 = xi
-                    y0 = yi
+
 
     def interpRef_point(self, points):
         x, y = points[0]
@@ -985,18 +987,20 @@ class code():
                 x2, y2 = points[0]  # para conectar o primeiro com o ultimo
             else:
                 x2, y2 = points[p + 1]
+
             dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-            x0 = x1
-            y0 = y1
+            u1 = (x2 - x1) * self.dif / dist
+            u2 = (y2 - y1) * self.dif / dist
+            xi = x1
+            yi = y1
+
             if (dist >= self.dif):
                 n = round(dist / self.dif)
 
                 for i in range(1, n + 1):
-                    xi = x0 + (x2 - x1) * self.dif / dist
-                    yi = y0 + (y2 - y1) * self.dif / dist
+                    xi = xi + u1
+                    yi = yi + u2
                     self.addRef_point(xi, yi)
-                    x0 = xi
-                    y0 = yi
 
 if __name__ == '__main__':
     code("QUARTA01.wmv").execute()
