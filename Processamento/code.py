@@ -965,7 +965,7 @@ class code():
             x0 = x1
             y0 = y1
             if (dist >= self.dif):
-                n = int(dist/self.dif)
+                n = round(dist/self.dif)
 
                 for i in range(1, n+1):
                     xi = x0 + (x2 - x1) * self.dif / dist
@@ -989,7 +989,7 @@ class code():
             x0 = x1
             y0 = y1
             if (dist >= self.dif):
-                n = int(dist / self.dif)
+                n = round(dist / self.dif)
 
                 for i in range(1, n + 1):
                     xi = x0 + (x2 - x1) * self.dif / dist
