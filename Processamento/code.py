@@ -955,48 +955,48 @@ class code():
         self.origin_points = np.array([[x, y]], dtype=np.float32)
 
         for p in range(0,len(points)):
-            x1, y1 = points[p]
+
+            x1, y1 = self.old_points[0]
             if (p == len(points)-1):
                 x2, y2 = points[0]  # para conectar o primeiro com o ultimo
             else:
                 x2, y2 = points[p + 1]
             dist = math.sqrt((x2-x1)**2+(y2-y1)**2)
-            if (dist > self.dif):
-                n = round(dist/self.dif)
-                k = (x2-x1)*self.dif/dist
-                #m = (y2-y1)/(x2-x1)
+            x0 = x1
+            y0 = y1
+            if (dist >= self.dif):
+                n = int(dist/self.dif)
 
-                for i in range(1, n):
-                    xi = x1+k
-                    #yi = y1 + k*m
-                    yi = y1 + (y2 - y1) * self.dif / dist
+                for i in range(1, n+1):
+                    xi = x0 + (x2 - x1) * self.dif / dist
+                    yi = y0 + (y2 - y1) * self.dif / dist
                     self.add_point(xi,yi)
-                    x1 = xi
-                    y1 = yi
+                    x0 = xi
+                    y0 = yi
 
     def interpRef_point(self, points):
         x, y = points[0]
         self.ref_points = np.array([[x, y]], dtype=np.float32)
         self.ref_points_first_frame = np.array([[x, y]], dtype=np.float32)
-        self.ref_points_first_frame = np.array([[x, y]], dtype=np.float32)
+
         for p in range(0, len(points)):
-            x1, y1 = points[p]
+            x1, y1 = self.ref_points[0]
             if (p == len(points) - 1):
                 x2, y2 = points[0]  # para conectar o primeiro com o ultimo
             else:
                 x2, y2 = points[p + 1]
             dist = math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2)
-            if(dist>self.dif):
-                n = round(dist / self.dif)
-                k = (x2 - x1) * self.dif / dist
-                #m = (y2 - y1) / (x2 - x1)
-                for i in range(1, n):
-                    xi = x1 + k
-                    #yi = y1 + k * m
-                    yi = y1 + (y2-y1)*self.dif/dist
+            x0 = x1
+            y0 = y1
+            if (dist >= self.dif):
+                n = int(dist / self.dif)
+
+                for i in range(1, n + 1):
+                    xi = x0 + (x2 - x1) * self.dif / dist
+                    yi = y0 + (y2 - y1) * self.dif / dist
                     self.addRef_point(xi, yi)
-                    x1 = xi
-                    y1 = yi
+                    x0 = xi
+                    y0 = yi
 
 if __name__ == '__main__':
     code("QUARTA01.wmv").execute()
