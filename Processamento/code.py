@@ -481,7 +481,7 @@ class code():
                                       sum(self.ref_tmp4), sum(self.ref_tmp5), sum(self.ref_tmp6), sum(self.ref_tmp7)]
     def showReferenceHistogram(self):
 
-        self.ReferenceHistogram(self.array2)
+        self.ReferenceHistogram(self.array2, self.arrayMedidasCentroideRef)
         plt.show()
 
     def __del__(self):
@@ -496,25 +496,36 @@ class code():
 
         return frame
 
-    def ReferenceHistogram(self, array1):
+    def ReferenceHistogram(self, array1, array2):
         f1 = plt.figure()
         bars = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
         y_pos = np.arange(len(bars))
-        ax = f1.add_subplot(1, 1, 1)
+        ax = f1.add_subplot(2, 1, 1)
         ax.set_xlabel('Cardinal Points')
         plt.tight_layout(pad=2.0)
-        # Add title and axis names
+
         ax.set_ylabel('Moved distance(mm)', labelpad=11)
         histograma = ax.bar(y_pos + 0.1, array1, width=0.4, color='steelblue', align='center', label='Distance(mm)')
-        # print("check")
-        # print(array2[0])
-        # Create names
+
         ax.set_title('Reference Histogram')
         plt.xticks(y_pos, bars)
         leg = ax.legend();
         plt.subplots_adjust(left=0.17)
+#-----------------------------------------------------------------------
+        bars1 = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+        y_pos1 = np.arange(len(bars))
+        ax1 = f1.add_subplot(2, 1, 2)
+        ax1.set_xlabel('Cardinal Points')
+        plt.tight_layout(pad=2.0)
 
-        return histograma
+        ax1.set_ylabel('Center of mass(mm)', labelpad=11)
+        histograma1 = ax1.bar(y_pos + 0.1, array2, width=0.4, color='steelblue', align='center', label='Distance(mm)')
+
+        plt.xticks(y_pos, bars)
+        leg1 = ax1.legend();
+        plt.subplots_adjust(left=0.17)
+
+        return histograma, histograma1
 
 
     def histogram(self, array1, array2, array3):
@@ -524,12 +535,10 @@ class code():
         ax = f2.add_subplot(3, 1, 1)
 
         plt.tight_layout(pad=2.0)
-        # Add title and axis names
+
         ax.set_ylabel('Moved distance(mm)', labelpad=11)
         histograma = ax.bar(y_pos + 0.1, array1, width=0.4, color='steelblue', align='center', label='Distance(mm)')
-        # print("check")
-        # print(array2[0])
-        # Create names
+
         plt.xticks(y_pos, bars)
         leg = ax.legend();
 
@@ -539,9 +548,7 @@ class code():
         ax1.set_ylabel('Number of vectors(%)')
         histograma1 = ax1.bar(y_pos1 + 0.1, array2, width=0.4, color='darkgray', align='center',
                               label='Number of vectors(%)')
-        # print("check")
-        # print(array2[0])
-        # Create names
+
         plt.xticks(y_pos1, bars1)
         leg1 = ax1.legend();
 
