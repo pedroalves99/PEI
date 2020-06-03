@@ -298,12 +298,39 @@ class App:
                     #print("not ref")
                     self.video.array2 = []
 
-                ew.create_excel(filename)
-                for index in range(0, len(self.video.array_dislocation)):
-                    ew.add_data(filename, self.filename, evaluationType, self.video.array_dislocation[index],
-                                self.video.array_cm[index], self.video.array_dislocation_ref[index],
-                                self.video.area_initial, self.video.array_area[index],
-                                0, 0, self.video.array_frame_num[index])
+                ew.create_excel(filename, evaluationType)
+
+                #ew.add_data(filename, 0, 0, [], [], [], [],
+                 #0, 0, 0, 0, 0, 0, 0)
+                index2 = 3
+
+                for index in range(0, len(self.video.array_frame_num) - 1):
+                    print("indexx")
+                    print(index)
+                    if len(self.video.distance1) == 0:
+                        distance1 = 0
+                    else:
+                        distance1 = self.video.distance1[index]
+
+                    if len(self.video.distance2) == 0:
+                        distance2 = 0
+                    else:
+                        distance2 = self.video.distance2[index]
+
+                    if self.video.hasRef :
+                        ew.add_data(filename, self.filename, self.video.array_frame_num[index], self.video.array_dislocation[index],
+                                    self.video.array_dislocation_ref[index], self.video.array_cm[index], self.video.array_cm_ref[index], self.video.arraycentroideX[index], self.video.arraycentroideRefX[index],
+                                    self.video.arraycentroideY[index],self.video.arraycentroideRefY[index], self.video.array_area[index],
+                                    distance1, distance2, index2)
+                    else:
+                        ew.add_data(filename, self.filename, self.video.array_frame_num[index],
+                                    self.video.array_dislocation[index],
+                                    [], self.video.array_cm[index],
+                                    [], 0, 0, 0, 0, self.video.array_area[index],
+                                    distance1, distance2, index2)
+
+
+                    index2 += 1
             if self.opened:
                 mb.showinfo(title="Done!", message="Exported successfully!")
             else:
@@ -315,9 +342,40 @@ class App:
         if len(evaluationType) != 0 and evaluationType != "Evaluation Type":
             # FAZER AS COISAS AQUI
             filename = fd.askopenfilename(filetypes=[("Excel sheet", ".xls .xlsx")])
-            for index in range(0, len(self.video.array_dislocation)):
+            index2 = 3
+            ew.copy_header(filename, evaluationType)
+            for index in range(0, len(self.video.array_frame_num) - 1):
+                print("indexx")
+                print(index)
+                if len(self.video.distance1) == 0:
+                    distance1 = 0
+                else:
+                    distance1 = self.video.distance1[index]
 
-                ew.add_data(filename, self.filename, evaluationType, self.video.array_dislocation[index], self.video.array_cm[index],self.video.array_dislocation_ref[index], self.video.area_initial, self.video.array_area[index], 0, 0, self.video.array_frame_num[index])
+                if len(self.video.distance2) == 0:
+                    distance2 = 0
+                else:
+                    distance2 = self.video.distance2[index]
+
+                if self.video.hasRef:
+                    ew.add_data(filename, self.filename, self.video.array_frame_num[index],
+                                self.video.array_dislocation[index],
+                                self.video.array_dislocation_ref[index], self.video.array_cm[index],
+                                self.video.array_cm_ref[index], self.video.arraycentroideX[index],
+                                self.video.arraycentroideRefX[index],
+                                self.video.arraycentroideY[index], self.video.arraycentroideRefY[index],
+                                self.video.array_area[index],
+                                distance1, distance2, index2)
+                else:
+                    ew.add_data(filename, self.filename, self.video.array_frame_num[index],
+                                self.video.array_dislocation[index],
+                                [], self.video.array_cm[index],
+                                [], 0, 0, 0, 0, self.video.array_area[index],
+                                distance1, distance2, index2)
+
+                index2 += 1
+
+
             mb.showinfo(title="Done!", message="Exported successfully!")
         else:
             mb.showinfo(title="Done!", message="Please fill in the evaluation Type!")

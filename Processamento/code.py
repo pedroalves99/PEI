@@ -17,11 +17,11 @@ class code():
         self.scale_percent = scale  # percentagem de aumento do video - default 100%
         self.video_path = video_path
         # Lukas Kanade params
-        self.lk_params_dist = dict(winSize=(25, 25),
+        self.lk_params_dist = dict(winSize=(24, 24),
                                    # valores de tracking diferentes para acompanhar pontos singulares/video longitudinal
                                    maxLevel=4,
                                    criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
-        self.lk_params = dict(winSize=(25, 25),
+        self.lk_params = dict(winSize=(24, 24),
                               maxLevel=4,
                               criteria=(cv2.TERM_CRITERIA_EPS | cv2.TERM_CRITERIA_COUNT, 10, 0.03))
         self.cap = cv2.VideoCapture(
@@ -33,7 +33,7 @@ class code():
         self.old_frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2GRAY)  # passa a primeira frame para grayScale
         # definir/iniciar variáveis aqui
         self.num_frames = 0
-        self.vectors_factor = 2  # fator de visualização dos arrays
+        self.vectors_factor = 1.5  # fator de visualização dos arrays
         self.q = 0
         self.dif = int(minDist)
         self.framesPerVector = int(framesPerVector)
@@ -61,7 +61,15 @@ class code():
         self.r_tmp5 = []
         self.r_tmp6 = []
         self.r_tmp7 = []
-
+        self.ref_tmp = []
+        self.ref_tmp1 = []
+        self.ref_tmp2 = []
+        self.ref_tmp3 = []
+        self.ref_tmp4 = []
+        self.ref_tmp5 = []
+        self.ref_tmp6 = []
+        self.ref_tmp7 = []
+        self.centroideAnteriorRef = []
 
         self.counts = defaultdict(int)
         self.cardinal_points = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
@@ -145,11 +153,15 @@ class code():
         self.show_record = False
         self.array_dislocation = []
         self.array_cm = []
+        self.array_cm_ref = []
         self.array_dislocation_ref = []
         self.array_area = []
         self.array_frame_num = []
         self.arrayx = np.array([[]], dtype=np.float32)
         self.array2 = np.array([[]], dtype=np.float32)
+        self.arrayMedidasCentroideRef = []
+        self.distance1 = []
+        self.distance2 = []
 
         # Mouse Function
 
@@ -247,8 +259,7 @@ class code():
                 self.center = None
                 self.centerRef = None
                 self.centroideAnterior = None
-                self.centroideAnteriorRef = None
-
+                self.centroideAnteriorRef = []
 
 
             else:
@@ -260,7 +271,7 @@ class code():
                                                                                                  self.ref_points, None,
                                                                                                  **self.lk_params)
                     self.draw_reference_vectors(self.newref_points, self.vectors_factor)
-
+                    self.draw_center_ref(self.vectors_factor)
                     self.ref_points = self.newref_points
                     # draw spline with the new pointscofcof
                     self.Refspline = self.draw_Refspline(self.Refspline, self.newref_points)
@@ -283,35 +294,46 @@ class code():
 
 
                     self.center = self.centroide(self.new_points)
-                    if self.hasRef:
+                    if self.flagRef:
             
                         self.centerRef = self.centroide(self.newref_points)
 
                         cv2.circle(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), 2, (255, 255, 0), -1)
+
+                        if self.t == self.framesPerVector : #para calcular o grafico x,y dos centroides
+
+                            if self.flagDistanceCoordenadasCentroide:
+                                self.distanceBetweenCentroideX = self.centroideAnterior[0] - self.center[0]
+                                self.distanceBetweenCentroideX = self.distanceBetweenCentroideX / self.conversao*10
+
+                                self.distanceBetweenCentroideY = self.centroideAnterior[1] - self.center[1]
+                                self.distanceBetweenCentroideY = self.distanceBetweenCentroideY / self.conversao*10
+
+
+                                self.distanceBetweenCentroideRefX = self.centroideAnteriorRef[0] - self.centerRef[0]
+                                self.distanceBetweenCentroideRefX = self.distanceBetweenCentroideRefX / self.conversao*10
+
+                                self.distanceBetweenCentroideRefY = self.centroideAnteriorRef[1] - self.centerRef[1]
+                                self.distanceBetweenCentroideRefY = self.distanceBetweenCentroideRefY / self.conversao*10
+
+
+                                self.arraycentroideX.append(round(self.distanceBetweenCentroideX, 3))
+                                self.arraycentroideY.append(round(self.distanceBetweenCentroideY, 3))
+                                self.arraycentroideRefX.append(round(self.distanceBetweenCentroideRefX, 3))
+                                self.arraycentroideRefY.append(round(self.distanceBetweenCentroideRefY, 3))
+
+                            else:
+                                self.arraycentroideX.append(0)
+                                self.arraycentroideY.append(0)
+                                self.arraycentroideRefX.append(0)
+                                self.arraycentroideRefY.append(0)
+
                     self.draw_center_vectors(self.vectors_factor)  # fazer o hist
 
                     self.old_points = self.new_points  # os new points são as coordenadas dos pontos apos a movimentação
                     self.spline = self.draw_spline(self.spline, self.new_points)
 
                     cv2.circle(self.frame, (int(self.center[0]), int(self.center[1])), 2, (0, 255, 0), -1)
-
-
-                    if self.flagDistanceCoordenadasCentroide and not self.stopDistanceCoordenadasCentroide and self.hasRef: #para calcular o grafico x,y dos centroides
-
-                        self.distanceBetweenCentroideX = self.centroideAnterior[0] - self.center[0]
-                        self.distanceBetweenCentroideX = self.distanceBetweenCentroideX / self.conversao*10
-                        self.arraycentroideX.append(round(self.distanceBetweenCentroideX,3))
-                        self.distanceBetweenCentroideY = self.centroideAnterior[1] - self.center[1]
-                        self.distanceBetweenCentroideY = self.distanceBetweenCentroideY / self.conversao*10
-                        self.arraycentroideY.append(round(self.distanceBetweenCentroideY,3))
-
-                        self.distanceBetweenCentroideRefX = self.centroideAnteriorRef[0] - self.centerRef[0]
-                        self.distanceBetweenCentroideRefX = self.distanceBetweenCentroideRefX / self.conversao*10
-                        self.arraycentroideRefX.append(round(self.distanceBetweenCentroideRefX,3))
-                        self.distanceBetweenCentroideRefY = self.centroideAnteriorRef[1] - self.centerRef[1]
-                        self.distanceBetweenCentroideRefY = self.distanceBetweenCentroideRefY / self.conversao*10
-                        self.arraycentroideRefY.append(round(self.distanceBetweenCentroideRefY,3))
-
 
                     self.frame = cv2.add(self.frame, self.spline)  # fazer o overlay do contour na main frame
 
@@ -329,6 +351,7 @@ class code():
                     self.vector_distance_2points = self.trackDistancePoints()
                     self.distanciaMM = self.distanciaIntroduzida / self.conversao  # imprime frame a frame a distancia
                     self.distanciaMM = round((self.distanciaMM) * 10, 3)
+
                     self.flagDistance = False
                     image = cv2.putText(self.frame, "d1 = " + str(self.distanciaMM) + " mm", self.org, self.font,
                                         self.fontScale, self.color, self.thickness, cv2.LINE_AA)
@@ -342,6 +365,7 @@ class code():
                     self.vector_distance_perpendicular_2points = self.trackDistancePointsPerpendicular()
                     self.distanciaMMPerpendicular = self.distanciaIntroduzidaPerpendicular / self.conversao  # imprime frame a frame a distancia
                     self.distanciaMMPerpendicular = round((self.distanciaMMPerpendicular) * 10, 3)
+
                     self.flagDistancePerpendicular = False
                     image2 = cv2.putText(self.frame, "d2 = " + str(self.distanciaMMPerpendicular) + " mm", self.org2,
                                          self.font, self.fontScale, self.color2, self.thickness, cv2.LINE_AA)
@@ -355,12 +379,23 @@ class code():
 
                 if self.q == 1:
                     self.area_initial = self.area
-
+                    if self.flagRef:
+                        self.array_dislocation_ref.append(self.array2)
+                        self.array_cm_ref.append(self.arrayMedidasCentroideRef)
+                        self.arraycentroideX.append(0)
+                        self.arraycentroideY.append(0)
+                        self.arraycentroideRefX.append(0)
+                        self.arraycentroideRefY.append(0)
                     self.array_dislocation.append(self.arrayx)
                     self.array_cm.append(self.arrayMedidasCentroide)
-                    self.array_dislocation_ref.append(self.array2)
                     self.array_area.append(self.area)
                     self.array_frame_num.append(self.num_frames)
+
+                    if len(self.vector_distance_2points) == 2:
+                        self.distance1.append(self.distanciaMM)  # para o excel
+
+                    if len(self.vector_distance_perpendicular_2points) == 2:
+                        self.distance2.append(self.distanciaMMPerpendicular)
 
                     self.q += 1
                 if self.newref_points.size != 0:
@@ -379,14 +414,19 @@ class code():
                     self.calcHistogram()
                     if self.flagRef:
                         self.calcRefHistogram()
+                        self.array_dislocation_ref.append(self.array2)
+                        self.array_cm_ref.append(self.arrayMedidasCentroideRef)
+
                     else: self.array2 = np.array([[]], dtype=np.float32)
-
-
                     self.array_dislocation.append(self.arrayx)
                     self.array_cm.append(self.arrayMedidasCentroide)
-                    self.array_dislocation_ref.append(self.array2)
                     self.array_area.append(self.area)
                     self.array_frame_num.append(self.num_frames)
+                    if len(self.vector_distance_2points) == 2:
+                        self.distance1.append(self.distanciaMM)  # para o excel
+
+                    if len(self.vector_distance_perpendicular_2points) == 2:
+                        self.distance2.append(self.distanciaMMPerpendicular)
 
                     self.t = 0  # reset da variavel
 
@@ -437,6 +477,8 @@ class code():
                                       sum(self.r_tmp4), sum(self.r_tmp5), sum(self.r_tmp6), sum(self.r_tmp7)]
         self.array2 = np.true_divide(self.arrayMedidasReference, len(self.ref_points))
 
+        self.arrayMedidasCentroideRef = [sum(self.ref_tmp), sum(self.ref_tmp1), sum(self.ref_tmp2), sum(self.ref_tmp3),
+                                      sum(self.ref_tmp4), sum(self.ref_tmp5), sum(self.ref_tmp6), sum(self.ref_tmp7)]
     def showReferenceHistogram(self):
 
         self.ReferenceHistogram(self.array2)
@@ -749,20 +791,66 @@ class code():
                     self.c_tmp7.append(self.distancePercorridaCentroide)
                     # print(tmp7)
 
-                for cardinal_point in self.cardinal_points:
-                    # this assumes exit.count() returns an int
-                    self.counts[cardinal_point] += exit.count(
-                        cardinal_point)  # counts the number of times North appears
-
-                for cardinal_point, count in self.counts.items():
-                    # print(f'{cardinal_point} appears a total of {count} times.')
-                    self.arrayArrowsCenter = [i for i in self.counts.values()]
 
                 # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
                 # print(tmp)
             i += 1
             # print(exit.count('N'))
             # print(hipote(x,y,x+grad_x,y+grad_y))   #  shows the distance between these two poin
+
+    def draw_center_ref(self, f1):
+        i = 0
+
+        if self.ref_points.size >= 2 and len(self.centroideAnteriorRef) > 0 and self.centerRef is not None:
+
+            grad_x, grad_y = self.centerRef[0] - self.centroideAnteriorRef[0], self.centerRef[1] - self.centroideAnteriorRef[1]
+            val_x = int(self.centerRef[0] + (f1 * grad_x))  # fator
+            val_y = int(self.centerRef[1] + (f1 * grad_y))
+
+            cv2.arrowedLine(self.frame, (int(self.centerRef[0]), int(self.centerRef[1])), (val_x, val_y), (0, 255, 255),
+                            1)  # f1 fator de aumento, para melhor visualização, ainda n foi posto
+
+            if self.flag_hist and self.t == self.framesPerVector:  ##fazer o hist
+                distancePercorridaCentroide = self.hipote(self.centroideAnteriorRef[0], self.centroideAnteriorRef[1],
+                                                               # tava num sitio errado, é aqui
+                                                               self.centerRef[0], self.centerRef[1])
+                distancePercorridaCentroide = distancePercorridaCentroide / self.conversao
+                distancePercorridaCentroide = round((distancePercorridaCentroide) * 10,
+                                                         3)  # distancia percorrida pelo centroide de 6 em 6 frames
+
+                exit = self.direcao(self.centerRef[0], self.centroideAnteriorRef[0], self.centerRef[1],self.centroideAnteriorRef[1])  # prints the direction of the cardinal points between two points!!
+                # print(exit)
+                if exit == self.cardinal_points[
+                    0]:  # tamanho pixeis de cada posição 'N' ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+                    self.ref_tmp.append(distancePercorridaCentroide)
+
+                if exit == self.cardinal_points[1]:  # 'NE'
+                    # print("test")
+                    self.ref_tmp1.append(distancePercorridaCentroide)
+
+                if exit == self.cardinal_points[2]:  # 'E'
+                    self.ref_tmp2.append(distancePercorridaCentroide)
+                    # print(tmp2)
+                if exit == self.cardinal_points[3]:  # 'SE'
+                    self.ref_tmp3.append(distancePercorridaCentroide)
+                    # print(tmp3)
+                if exit == self.cardinal_points[4]:  # 'S'
+                    self.ref_tmp4.append(distancePercorridaCentroide)
+                    # print(tmp4)
+                if exit == self.cardinal_points[5]:  # 'SW'
+                    self.ref_tmp5.append(distancePercorridaCentroide)
+                    # print(tmp5)
+                if exit == self.cardinal_points[6]:  # 'W'
+                    self.ref_tmp6.append(distancePercorridaCentroide)
+                    # print(tmp6)
+                if exit == self.cardinal_points[7]:  # 'NW'
+                    self.ref_tmp7.append(distancePercorridaCentroide)
+                    # print(tmp7)
+
+
+                # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
+                # print(tmp)
+            i += 1
 
     def draw_reference_vectors(self,points, f1):
             i = 0
@@ -811,17 +899,7 @@ class code():
                             self.r_tmp7.append(tamanho)
                             # print(tmp7)
 
-                        for cardinal_point in self.cardinal_points:
-                            # this assumes exit.count() returns an int
-                            self.counts[cardinal_point] += exit.count(
-                                cardinal_point)  # counts the number of times North appears
 
-                        for cardinal_point, count in self.counts.items():
-                            # print(f'{cardinal_point} appears a total of {count} times.')
-                            self.arrayReferenceArrows = [i for i in self.counts.values()]
-                            # print(arrayArrows)
-                        # tmp.append((hipote(x,y,x+grad_x,y+grad_y)))
-                        # print(tmp)
                     i += 1
                     # print(exit.count('N'))
                     # print(hipote(x,y,x+grad_x,y+grad_y))   #  shows the distance between these two points
